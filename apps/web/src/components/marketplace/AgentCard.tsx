@@ -18,7 +18,7 @@ export function AgentCard({ agent }: AgentCardProps) {
   return (
     <Link
       href={`/agents/${agent.shopSlug || agent.id}`}
-      className="group bg-white rounded-xl border border-neutral-200/70 p-6 flex flex-col justify-between hover:border-neutral-400 transition-all duration-300"
+      className="group bg-white rounded-xl border border-neutral-200/80 p-6 flex flex-col justify-between hover:border-[#FFBE00] hover:shadow-md hover:-translate-y-1 transition-all duration-300 shadow-2xs"
     >
       <div>
         {/* Hub Header */}
@@ -33,8 +33,8 @@ export function AgentCard({ agent }: AgentCardProps) {
             />
           </div>
 
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-500">
-            <MapPin className="w-3.5 h-3.5 text-neutral-400" />
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-neutral-100 text-neutral-700">
+            <MapPin className="w-3.5 h-3.5 text-neutral-500" />
             <span>{agent.city}</span>
           </div>
         </div>
@@ -42,11 +42,11 @@ export function AgentCard({ agent }: AgentCardProps) {
         {/* Store Title & Verification */}
         <div className="space-y-1 mb-2">
           <div className="flex items-center gap-1.5">
-            <h3 className="font-medium text-neutral-900 text-base group-hover:text-neutral-600 transition-colors">
+            <h3 className="font-bold text-neutral-900 text-base group-hover:text-[#0070F3] transition-colors">
               {agent.shopName}
             </h3>
             {agent.isVerified && (
-              <ShieldCheck className="w-4 h-4 text-neutral-900 shrink-0" title="Verified Storefront" />
+              <ShieldCheck className="w-4 h-4 text-[#0070F3] shrink-0" title="Verified Storefront" />
             )}
           </div>
           <p className="text-xs text-neutral-500 line-clamp-1">
@@ -54,7 +54,7 @@ export function AgentCard({ agent }: AgentCardProps) {
           </p>
         </div>
 
-        <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed mt-2">
+        <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed mt-2">
           {agent.shopDescription || 'Direct electronics distributor and verified retail partner.'}
         </p>
       </div>
@@ -62,16 +62,16 @@ export function AgentCard({ agent }: AgentCardProps) {
       {/* Footer Meta */}
       <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center justify-between text-xs">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-neutral-900 font-medium">
-            <Star className="w-3.5 h-3.5 fill-neutral-900 text-neutral-900" />
+          <div className="flex items-center gap-1 text-neutral-900 font-bold">
+            <Star className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00]" />
             <span>{agent.rating.toFixed(1)}</span>
             <span className="text-neutral-400 font-normal">({agent.ratingCount})</span>
           </div>
           <span className="text-neutral-300">·</span>
-          <span className="text-neutral-500">{agent.productCount || 20}+ items</span>
+          <span className="text-neutral-500 font-medium">{agent.productCount || 20}+ items</span>
         </div>
 
-        <div className="text-neutral-400 group-hover:text-neutral-900 group-hover:translate-x-0.5 transition-all">
+        <div className="text-neutral-400 group-hover:text-[#0070F3] group-hover:translate-x-1 transition-all">
           <ArrowRight className="w-4 h-4" />
         </div>
       </div>

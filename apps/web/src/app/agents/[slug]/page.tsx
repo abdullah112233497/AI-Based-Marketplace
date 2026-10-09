@@ -67,32 +67,32 @@ export default function AgentProfilePage() {
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-black text-ink tracking-tight">{agent.shopName}</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">{agent.shopName}</h1>
                 {agent.isVerified && (
-                  <span className="p-1 rounded-full bg-teal-50 text-teal-600">
+                  <span className="p-1 rounded-full bg-blue-50 text-[#0070F3]">
                     <ShieldCheck className="w-5 h-5" />
                   </span>
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-xs text-ink-muted">
-                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {agent.address}, {agent.city}</span>
-                <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-slate-400" /> {agent.contactPhone}</span>
+              <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-500">
+                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-neutral-400" /> {agent.address}, {agent.city}</span>
+                <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-neutral-400" /> {agent.contactPhone}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 bg-slate-50 border border-slate-200 px-5 py-3 rounded-2xl">
+          <div className="flex items-center gap-6 bg-[#F5F6F8] border border-neutral-200 px-5 py-3 rounded-2xl">
             <div className="text-center">
-              <div className="flex items-center gap-1 text-amber-500 font-extrabold text-sm justify-center">
-                <Star className="w-4 h-4 fill-amber-400" /> {agent.rating.toFixed(1)}
+              <div className="flex items-center gap-1 text-neutral-900 font-extrabold text-sm justify-center">
+                <Star className="w-4 h-4 fill-[#FFBE00] text-[#FFBE00]" /> {agent.rating.toFixed(1)}
               </div>
-              <p className="text-[10px] text-ink-muted">({agent.ratingCount} reviews)</p>
+              <p className="text-[10px] text-neutral-500">({agent.ratingCount} reviews)</p>
             </div>
-            <div className="w-px h-8 bg-slate-200" />
+            <div className="w-px h-8 bg-neutral-200" />
             <div className="text-center">
-              <p className="font-extrabold text-sm text-teal-800">{agent.products?.length || 0}</p>
-              <p className="text-[10px] text-ink-muted">Listings</p>
+              <p className="font-extrabold text-sm text-[#0070F3]">{agent.products?.length || 0}</p>
+              <p className="text-[10px] text-neutral-500">Listings</p>
             </div>
           </div>
         </div>
