@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Lock, Mail, ShieldCheck, ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, Sparkles, ArrowRight } from 'lucide-react';
 import { LoginSchema, LoginInput, UserRole } from '@tech-marketplace/shared';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,8 +17,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
-    resolver: zodResolver(LoginSchema)
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginInput>({
+    resolver: zodResolver(LoginSchema),
   });
 
   const onSubmit = async (data: LoginInput) => {
@@ -29,7 +28,7 @@ export default function LoginPage() {
     try {
       const res = await apiFetch('/auth/login', {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       if (res?.data) {
@@ -50,119 +49,161 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 relative overflow-hidden">
-      {/* Background gradient blobs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-100/30 rounded-full blur-3xl pointer-events-none -z-10"></div>
-      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-amber-100/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  const handleDemoSelect = (email: string) => {
+    setValue('email', email);
+    setValue('password', 'Admin123!');
+  };
 
-      <div className="max-w-md w-full space-y-6 animate-fade-up">
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 bg-[#F5F6F8]">
+      <div className="max-w-md w-full space-y-6">
         
-        {/* Card */}
-        <div className="bg-white rounded-3xl border border-border p-8 shadow-xl luxury-glow-subtle">
+        {/* Main Login Card */}
+        <div className="bg-white rounded-xl border border-neutral-200 p-8 shadow-sm">
           
-          {/* Header */}
-          <div className="text-center space-y-3 mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-600 to-teal-800 text-white flex items-center justify-center font-black text-xl mx-auto shadow-lg luxury-glow-teal">
-              TM
-            </div>
-            <h1 className="text-2xl font-black text-ink tracking-tight">Welcome Back</h1>
-            <p className="text-xs text-ink-muted">Sign in to Tech Marketplace to access your account</p>
+          {/* Header & Logo */}
+          <div className="text-center space-y-2 mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 relative flex items-center justify-center">
+                <svg viewBox="0 0 36 36" className="w-8 h-8 fill-none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 2L32 10V26L18 34L4 26V10L18 2Z" fill="#0070F3" />
+                  <path d="M18 2L32 10L18 18L4 10L18 2Z" fill="#FFBE00" />
+                  <path d="M18 18L32 10V26L18 34V18Z" fill="#00BCD4" />
+                  <path d="M4 10L18 18V34L4 26V10Z" fill="#0284C7" />
+                </svg>
+              </div>
+              <span className="font-extrabold text-2xl tracking-tight text-neutral-900">
+                Onetech
+              </span>
+            </Link>
+            <h1 className="text-xl font-bold text-neutral-900">Sign In to Your Account</h1>
+            <p className="text-xs text-neutral-500">Access orders, compare matrix, and verified merchant deals</p>
           </div>
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center text-[11px] shrink-0">!</span>
-              {errorMsg}
+            <div className="mb-6 p-3.5 rounded-md bg-rose-50 border border-rose-200 text-[#DF2020] text-xs font-medium flex items-center gap-2">
+              <span className="w-4 h-4 rounded-full bg-[#DF2020] text-white flex items-center justify-center text-[10px] shrink-0 font-bold">!</span>
+              <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* Quick Demo Credentials Box */}
-          <div className="mb-6 p-4 bg-gradient-to-br from-slate-50 to-teal-50/50 border border-slate-200 rounded-2xl text-[11px] text-slate-600 space-y-1.5">
-            <p className="font-extrabold text-ink text-xs flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Demo Accounts (Password: <code className="bg-slate-200 px-1.5 py-0.5 rounded font-mono">Admin123!</code>)
-            </p>
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              {[
-                { role: 'Admin', email: 'admin@techmarketplace.pk', color: 'text-violet-700 bg-violet-50 border-violet-200' },
-                { role: 'Agent', email: 'lahore@techzone.pk', color: 'text-teal-700 bg-teal-50 border-teal-200' },
-                { role: 'Customer', email: 'customer@gmail.com', color: 'text-amber-700 bg-amber-50 border-amber-200' },
-              ].map(({ role, email, color }) => (
-                <div key={role} className={`p-2 rounded-xl border text-center ${color}`}>
-                  <div className="font-bold text-[10px]">{role}</div>
-                  <div className="font-mono text-[9px] truncate mt-0.5 opacity-80">{email.split('@')[0]}</div>
-                </div>
-              ))}
+          {/* Demo Credentials Quick Switcher */}
+          <div className="mb-6 p-3.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-neutral-800 text-[11px] flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#FFBE00]" />
+                Demo Credentials (Click to fill)
+              </span>
+              <span className="text-[10px] font-mono text-neutral-500 bg-neutral-200 px-1.5 py-0.5 rounded">
+                Admin123!
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleDemoSelect('customer@gmail.com')}
+                className="p-1.5 rounded border border-neutral-200 bg-white hover:border-[#FFBE00] text-[10px] font-semibold text-neutral-800 transition-colors"
+              >
+                Customer
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoSelect('lahore@techzone.pk')}
+                className="p-1.5 rounded border border-neutral-200 bg-white hover:border-[#FFBE00] text-[10px] font-semibold text-neutral-800 transition-colors"
+              >
+                Merchant
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoSelect('admin@techmarketplace.pk')}
+                className="p-1.5 rounded border border-neutral-200 bg-white hover:border-[#FFBE00] text-[10px] font-semibold text-neutral-800 transition-colors"
+              >
+                Super Admin
+              </button>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Email */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Email Field */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">Email Address</label>
+              <label className="block text-xs font-bold text-neutral-700 mb-1.5">
+                Email Address
+              </label>
               <div className="relative">
                 <input
                   type="email"
                   {...register('email')}
                   placeholder="name@example.com"
-                  className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm text-ink bg-slate-50 focus:bg-white transition-all focus:outline-none"
+                  className="w-full pl-9 pr-4 py-2.5 border border-neutral-300 rounded-md text-xs text-neutral-900 bg-white focus:outline-none focus:border-neutral-900 transition-colors"
                 />
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
               </div>
-              {errors.email && <p className="text-[11px] text-rose-600 mt-1.5 font-semibold">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="text-[11px] text-[#DF2020] mt-1 font-medium">{errors.email.message}</p>
+              )}
             </div>
 
-            {/* Password */}
+            {/* Password Field */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">Password</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-neutral-700">
+                  Password
+                </label>
+                <Link href="#" className="text-[11px] text-[#0070F3] hover:underline font-medium">
+                  Forgot Password?
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-12 py-3 border border-slate-200 rounded-xl text-sm text-ink bg-slate-50 focus:bg-white transition-all focus:outline-none"
+                  className="w-full pl-9 pr-10 py-2.5 border border-neutral-300 rounded-md text-xs text-neutral-900 bg-white focus:outline-none focus:border-neutral-900 transition-colors"
                 />
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && <p className="text-[11px] text-rose-600 mt-1.5 font-semibold">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-[11px] text-[#DF2020] mt-1 font-medium">{errors.password.message}</p>
+              )}
             </div>
 
-            <Button type="submit" variant="primary" size="lg" isLoading={isLoading} className="w-full mt-2">
-              <span>Sign In to Account</span>
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+            {/* Yellow Onetech Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-2.5 bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 font-bold text-xs rounded-md shadow-xs transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <span>Signing in...</span>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
           </form>
 
-          <div className="pt-6 border-t border-slate-100 flex flex-col gap-2.5 text-center text-xs text-ink-muted mt-6">
-            <p>
-              New customer?{' '}
-              <Link href="/register" className="text-teal-700 font-bold hover:underline hover:text-teal-900">
-                Create customer account
-              </Link>
-            </p>
-            <p>
-              Are you a hardware retailer?{' '}
-              <Link href="/register/agent" className="text-teal-700 font-bold hover:underline hover:text-teal-900">
-                Register as verified agent
+          {/* Footer Link */}
+          <div className="text-center mt-6 pt-5 border-t border-neutral-100">
+            <p className="text-xs text-neutral-500">
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="font-bold text-[#DF2020] hover:underline">
+                Sign Up Now
               </Link>
             </p>
           </div>
+
         </div>
 
-        {/* Trust note */}
-        <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400">
-          <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
-          <span>Your data is secured with industry-standard encryption</span>
-        </div>
       </div>
     </div>
   );

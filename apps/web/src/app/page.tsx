@@ -2,380 +2,624 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Smartphone,
-  Laptop,
-  Headphones,
-  ShieldCheck,
-  Zap,
-  Sparkles,
-  ArrowRight,
+  ChevronRight,
+  ChevronLeft,
   Truck,
+  ShieldCheck,
   RotateCcw,
-  SlidersHorizontal,
-  Flame,
-  Clock,
-  CheckCircle2,
-  MapPin,
-  Store,
-  Award,
+  Headphones,
+  Gift,
+  ArrowRight,
   Star,
-  CreditCard,
-  Package,
-  Globe
+  Clock,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { ProductSummary, AgentSummary } from '@tech-marketplace/shared';
 import { ProductCard } from '@/components/marketplace/ProductCard';
-import { AgentCard } from '@/components/marketplace/AgentCard';
+import { HeroSection } from '@/components/marketplace/HeroSection';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { StaggerContainer, StaggerItem } from '@/components/ui/StaggerContainer';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Button } from '@/components/ui/Button';
-import { formatPKR } from '@/lib/utils';
+
+// 8 Onetech Hardware Categories from reference image
+const ONETECH_CATEGORIES = [
+  {
+    name: 'Cooling System',
+    href: '/products?search=Cooling',
+    image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=300&q=80',
+  },
+  {
+    name: 'Processor',
+    href: '/products?search=Intel',
+    image: 'https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=300&q=80',
+  },
+  {
+    name: 'Mother Board',
+    href: '/products?search=Motherboard',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=300&q=80',
+  },
+  {
+    name: 'Memory (RAM)',
+    href: '/products?search=RAM',
+    image: 'https://images.unsplash.com/photo-1562976540-1502c2145186?w=300&q=80',
+  },
+  {
+    name: 'Storage (SSD)',
+    href: '/products?search=SSD',
+    image: 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=300&q=80',
+  },
+  {
+    name: 'Graphics Card',
+    href: '/products?search=RTX',
+    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=300&q=80',
+  },
+  {
+    name: 'Power Supply',
+    href: '/products?search=Power',
+    image: 'https://images.unsplash.com/photo-1587202372583-49330a15584d?w=300&q=80',
+  },
+  {
+    name: 'Cabinet (Case)',
+    href: '/products?search=Case',
+    image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=300&q=80',
+  },
+];
+
+// Customer Testimonials from Reference
+const CUSTOMER_REVIEWS = [
+  {
+    quote:
+      'I recently purchased a high-end RTX gaming rig from Hafeez Centre through this platform. The pricing was fair, physical shop warranty was verified, and delivery took under 24 hours.',
+    author: 'Hamza Malik',
+    role: 'Gaming Creator, Lahore',
+  },
+  {
+    quote:
+      'As a software architect, I always look for top-tier hardware. Sourcing verified M3 Max and Dell XPS directly from Techno City with serial tracking has saved our team countless hours.',
+    author: 'Daniyal Qureshi',
+    role: 'Engineering Lead, Karachi',
+  },
+  {
+    quote:
+      'The IMEI verification and physical store invoices give complete peace of mind. Both phones and peripherals arrived factory sealed with genuine PTA clearance.',
+    author: 'Zainab Tariq',
+    role: 'Enterprise Buyer, Islamabad',
+  },
+];
 
 export default function HomePage() {
-  // Flash deal countdown timer simulation
-  const [timeLeft, setTimeLeft] = useState({ hours: 14, minutes: 32, seconds: 45 });
+  // Live Countdown Timer for "Deals Of The Week"
+  const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 14, minutes: 36, seconds: 48 });
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
         if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
         if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return { hours: 24, minutes: 0, seconds: 0 };
+        if (prev.days > 0) return { days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
+        return { days: 3, hours: 12, minutes: 0, seconds: 0 };
       });
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch Featured Products (12 products)
-  const { data: productsRes, isLoading: loadingProducts } = useQuery<{ success: boolean; data: ProductSummary[] }>({
+  // Fetch Products (Newest 12 for Bento, Featured, and New Products sections)
+  const { data: productsRes, isLoading: loadingProducts } = useQuery<{
+    success: boolean;
+    data: ProductSummary[];
+  }>({
     queryKey: ['home-products'],
-    queryFn: () => apiFetch('/products?limit=12&sort=newest')
+    queryFn: () => apiFetch('/products?limit=12&sort=newest'),
   });
 
-  // Fetch Verified Agents (All 4 vendors)
-  const { data: agentsRes, isLoading: loadingAgents } = useQuery<{ success: boolean; data: AgentSummary[] }>({
+  // Fetch Physical Hub Stores
+  const { data: agentsRes } = useQuery<{
+    success: boolean;
+    data: AgentSummary[];
+  }>({
     queryKey: ['home-agents'],
-    queryFn: () => apiFetch('/agent/directory')
+    queryFn: () => apiFetch('/agent/directory'),
   });
 
   const products = productsRes?.data || [];
   const agents = agentsRes?.data || [];
-  const flashDeals = products.filter(p => p.compareAtPrice && p.compareAtPrice > p.basePrice).slice(0, 4);
+
+  const featuredCompact = products.slice(0, 6);
+  const shopByNew = products.slice(0, 4);
+  const weeklyDeals = products.filter((p) => p.compareAtPrice && p.compareAtPrice > p.basePrice).slice(0, 2);
 
   return (
-    <div className="space-y-0 pb-16">
+    <div className="space-y-12 sm:space-y-16 pb-20 bg-white">
       
-      {/* 1. Hero Section — Premium Gradient */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white pt-20 pb-24 lg:pt-28 lg:pb-32">
-        {/* Ambient Background Effects */}
-        <div className="absolute inset-0 hero-mesh-bg opacity-30"></div>
-        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-amber-500/8 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-500/30 to-transparent"></div>
+      {/* 1. Bento Hero Section with Timed Sequence Entrance */}
+      <HeroSection />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight max-w-5xl mx-auto leading-[1.1] mb-8 animate-fade-up">
-            Buy Verified Tech. <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-300 to-amber-300">
-              Compare Specs Side-by-Side.
-            </span>
-          </h1>
-
-          <p className="text-base sm:text-lg text-slate-300/90 max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-up stagger-2">
-            Direct access to authenticated physical shops across Pakistan. Filter by RAM, GPU TDP, and PTA approval with 100% genuine seal guarantee.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 animate-fade-up stagger-3">
-            <Link href="/products">
-              <Button variant="primary" size="lg" className="shadow-lg shadow-teal-900/50 luxury-glow-teal px-8 py-4 text-sm">
-                <span>Explore Full Catalog</span>
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-
-            <Link href="/compare">
-              <Button variant="outline" size="lg" className="bg-white/5 border-white/15 text-white hover:bg-white/10 backdrop-blur-md px-8 py-4 text-sm">
-                <SlidersHorizontal className="w-4 h-4 mr-2 text-teal-400" />
-                <span>Open Comparison Tool</span>
-              </Button>
-            </Link>
-          </div>
-
-          {/* Trust Metrics Row */}
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-8 text-[11px] text-slate-400 animate-fade-up stagger-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4 text-teal-400" />
-              </div>
-              <span>IMEI Verified</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <Truck className="w-4 h-4 text-teal-400" />
-              </div>
-              <span>Nationwide Delivery</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <RotateCcw className="w-4 h-4 text-teal-400" />
-              </div>
-              <span>7-Day Returns</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <CreditCard className="w-4 h-4 text-teal-400" />
-              </div>
-              <span>Cash on Delivery</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Category Navigation Tiles — Overlapping Hero Bottom */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          
-          <Link
-            href="/products?category=mobiles"
-            className="luxury-card rounded-2xl p-6 group relative"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-teal-50/80 to-transparent rounded-bl-full -z-0 group-hover:scale-125 transition-transform duration-500"></div>
-            <div className="relative z-10 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-100 text-teal-700 flex items-center justify-center font-bold shadow-sm">
-                <Smartphone className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-ink text-lg group-hover:text-brand transition-colors">
-                  Mobiles & Tablets
-                </h3>
-                <p className="text-xs text-ink-muted mt-0.5">Samsung, Apple, Xiaomi, Pixel, OnePlus</p>
-                <span className="text-xs font-bold text-teal-700 inline-flex items-center gap-1 mt-2.5 group-hover:gap-2.5 transition-all">
-                  Browse Smartphones <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
-          </Link>
-
-          <Link
-            href="/products?category=laptops"
-            className="luxury-card rounded-2xl p-6 group relative"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-50/80 to-transparent rounded-bl-full -z-0 group-hover:scale-125 transition-transform duration-500"></div>
-            <div className="relative z-10 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 text-amber-600 flex items-center justify-center font-bold shadow-sm">
-                <Laptop className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-ink text-lg group-hover:text-amber-600 transition-colors">
-                  Laptops & Computers
-                </h3>
-                <p className="text-xs text-ink-muted mt-0.5">MacBooks, ROG, RTX 4090 GPUs, XPS</p>
-                <span className="text-xs font-bold text-amber-700 inline-flex items-center gap-1 mt-2.5 group-hover:gap-2.5 transition-all">
-                  Browse Laptops <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
-          </Link>
-
-          <Link
-            href="/products?category=accessories"
-            className="luxury-card rounded-2xl p-6 group relative"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-violet-50/80 to-transparent rounded-bl-full -z-0 group-hover:scale-125 transition-transform duration-500"></div>
-            <div className="relative z-10 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-50 to-violet-100 text-violet-700 flex items-center justify-center font-bold shadow-sm">
-                <Headphones className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-ink text-lg group-hover:text-violet-700 transition-colors">
-                  Audio & Wearables
-                </h3>
-                <p className="text-xs text-ink-muted mt-0.5">Sony ANC, Apple Watch, Keychron, Shure</p>
-                <span className="text-xs font-bold text-violet-700 inline-flex items-center gap-1 mt-2.5 group-hover:gap-2.5 transition-all">
-                  Browse Audio Gear <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
-          </Link>
-
-        </div>
-      </section>
-
-      {/* 3. Limited-Time Flash Deals — Premium Dark Card */}
-      {flashDeals.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-          <div className="bg-gradient-to-br from-slate-950 via-teal-950 to-slate-900 text-white rounded-3xl p-7 sm:p-10 shadow-2xl border border-teal-800/20 relative overflow-hidden">
-            {/* Decorative background circles */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-5 border-b border-teal-800/40">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center font-black shadow-lg luxury-pulse-glow">
-                  <Flame className="w-6 h-6 fill-slate-950" />
+      {/* 2. 5-Column Trust Bar (Scroll-Revealed) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={16} duration={500}>
+          <div className="border border-neutral-200 rounded-xl p-5 sm:p-6 bg-white shadow-2xs">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-4 divide-y md:divide-y-0 md:divide-x divide-neutral-100">
+              
+              <div className="flex items-center gap-3 pt-3 md:pt-0">
+                <div className="w-10 h-10 rounded-full bg-[#FFF8E1] flex items-center justify-center shrink-0">
+                  <Truck className="w-5 h-5 text-[#FFBE00]" />
                 </div>
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                    Verified Flash Deals
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Special merchant discounts with verified spec seals</p>
+                  <h5 className="font-bold text-xs text-neutral-900">Easy Free Delivery</h5>
+                  <p className="text-[11px] text-neutral-400">Order On Rs 5,000*</p>
                 </div>
               </div>
 
-              {/* Live Countdown Timer */}
-              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-2xl border border-white/10 text-xs">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <span className="text-slate-400">Ends in:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-bold text-amber-300 bg-amber-500/10 px-2 py-1 rounded-lg">{String(timeLeft.hours).padStart(2, '0')}h</span>
-                  <span className="text-amber-400">:</span>
-                  <span className="font-mono font-bold text-amber-300 bg-amber-500/10 px-2 py-1 rounded-lg">{String(timeLeft.minutes).padStart(2, '0')}m</span>
-                  <span className="text-amber-400">:</span>
-                  <span className="font-mono font-bold text-amber-300 bg-amber-500/10 px-2 py-1 rounded-lg">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+              <div className="flex items-center gap-3 md:pl-4 pt-3 md:pt-0">
+                <div className="w-10 h-10 rounded-full bg-[#FFF8E1] flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5 text-[#FFBE00]" />
+                </div>
+                <div>
+                  <h5 className="font-bold text-xs text-neutral-900">Premium Warranty</h5>
+                  <p className="text-[11px] text-neutral-400">Up To 2 Years</p>
                 </div>
               </div>
-            </div>
 
-            <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {flashDeals.map(p => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+              <div className="flex items-center gap-3 md:pl-4 pt-3 md:pt-0">
+                <div className="w-10 h-10 rounded-full bg-[#FFF8E1] flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-5 h-5 text-[#FFBE00]" />
+                </div>
+                <div>
+                  <h5 className="font-bold text-xs text-neutral-900">Easy Free Return</h5>
+                  <p className="text-[11px] text-neutral-400">7-Day Inspection</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 md:pl-4 pt-3 md:pt-0">
+                <div className="w-10 h-10 rounded-full bg-[#FFF8E1] flex items-center justify-center shrink-0">
+                  <Headphones className="w-5 h-5 text-[#FFBE00]" />
+                </div>
+                <div>
+                  <h5 className="font-bold text-xs text-neutral-900">24/7 Online Support</h5>
+                  <p className="text-[11px] text-neutral-400">Physical Hub Assistance</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 md:pl-4 pt-3 md:pt-0">
+                <div className="w-10 h-10 rounded-full bg-[#FFF8E1] flex items-center justify-center shrink-0">
+                  <Gift className="w-5 h-5 text-[#FFBE00]" />
+                </div>
+                <div>
+                  <h5 className="font-bold text-xs text-neutral-900">Best Special Gifts</h5>
+                  <p className="text-[11px] text-neutral-400">On First Order</p>
+                </div>
+              </div>
+
             </div>
           </div>
-        </section>
-      )}
+        </ScrollReveal>
+      </section>
 
-      {/* 4. Verified Tech Merchants (All 4 Hubs) */}
-      <section className="bg-gradient-to-b from-canvas to-teal-50/30 py-16 mt-16 border-y border-teal-100/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold text-teal-700 uppercase tracking-wider mb-2">
-                <div className="w-6 h-6 rounded-lg bg-teal-100 flex items-center justify-center">
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                </div>
-                Physical Storefront Hubs
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-ink tracking-tight">
-                Verified Vendor Directory
-              </h2>
-              <p className="text-xs text-ink-muted mt-1.5">Authenticated physical stores across Pakistan with 20+ items each</p>
+      {/* 3. "Shop By Categories" Section (Staggered Animation Reveal) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={16} duration={450}>
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+              Shop By Categories
+            </h2>
+
+            <div className="flex items-center gap-1.5">
+              <button className="w-7 h-7 rounded border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-900 transition-colors">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button className="w-7 h-7 rounded bg-[#FFBE00] flex items-center justify-center text-neutral-900 font-bold transition-colors">
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-            <Link href="/agents" className="text-xs font-bold text-teal-700 hover:text-teal-900 flex items-center gap-1.5 bg-teal-50 px-4 py-2 rounded-xl border border-teal-200 hover:border-teal-300 transition-all hover:-translate-y-0.5">
-              <span>View All Hubs</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
+        </ScrollReveal>
 
-          {loadingAgents ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-white rounded-2xl border border-border p-5 space-y-4">
-                  <Skeleton className="w-full h-24 rounded-xl" />
-                  <Skeleton className="w-1/2 h-5" />
-                  <Skeleton className="w-3/4 h-4" />
+        <StaggerContainer staggerDelay={60} duration={400} className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+          {ONETECH_CATEGORIES.map((cat, idx) => (
+            <StaggerItem key={cat.name} index={idx}>
+              <Link
+                href={cat.href}
+                className={`group p-4 rounded-lg flex items-center gap-4 transition-all duration-300 ${
+                  idx === 0
+                    ? 'border border-neutral-300 shadow-xs bg-white hover:border-[#FFBE00] hover:shadow-md'
+                    : 'hover:bg-neutral-50 hover:shadow-xs border border-transparent hover:border-neutral-200'
+                }`}
+              >
+                <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-contain transition-transform duration-300 group-hover:scale-110"
+                  />
                 </div>
-              ))}
+
+                <div>
+                  <h3 className="font-bold text-xs text-neutral-900 group-hover:text-[#0070F3] transition-colors leading-snug">
+                    {cat.name}
+                  </h3>
+                  <span className="text-[11px] text-neutral-400 font-medium hover:underline">
+                    View More
+                  </span>
+                </div>
+              </Link>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </section>
+
+      {/* 4. Dual Promotional Dark Banners (Split Reveal) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Banner 1: Refurbished Computer System (Slide In Left) */}
+          <ScrollReveal direction="left" distance={24} duration={600}>
+            <div className="relative rounded-2xl overflow-hidden min-h-[220px] p-8 flex flex-col justify-center bg-neutral-900 group shadow-xs">
+              <Image
+                src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=900&q=80"
+                alt="Refurbished Gaming Setup"
+                fill
+                className="object-cover opacity-50 group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="relative z-10 space-y-3 max-w-xs text-left">
+                <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                  Get Your <span className="text-[#00BCD4]">Refurbished Computer</span> <br />
+                  System At Valid Price
+                </h3>
+                <Link
+                  href="/products?condition=REFURBISHED"
+                  className="inline-block border border-white text-white font-medium text-xs px-5 py-2 rounded hover:bg-white hover:text-neutral-900 transition-colors"
+                >
+                  Shop Now
+                </Link>
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {agents.map(agent => (
-                <AgentCard key={agent.id} agent={agent} />
-              ))}
+          </ScrollReveal>
+
+          {/* Banner 2: New Computer System (Slide In Right) */}
+          <ScrollReveal direction="right" distance={24} duration={600}>
+            <div className="relative rounded-2xl overflow-hidden min-h-[220px] p-8 flex flex-col justify-center bg-neutral-900 group shadow-xs">
+              <Image
+                src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=900&q=80"
+                alt="New Computer Setup"
+                fill
+                className="object-cover opacity-50 group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="relative z-10 space-y-3 max-w-xs text-left">
+                <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                  Get Your <span className="text-[#FFBE00]">New Computer</span> System <br />
+                  At 15% Discount
+                </h3>
+                <Link
+                  href="/products?condition=NEW"
+                  className="inline-block border border-white text-white font-medium text-xs px-5 py-2 rounded hover:bg-white hover:text-neutral-900 transition-colors"
+                >
+                  Shop Now
+                </Link>
+              </div>
             </div>
-          )}
+          </ScrollReveal>
+
         </div>
       </section>
 
-      {/* 5. Full Catalog Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-teal-700 uppercase tracking-wider mb-2">
-              <div className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-              </div>
-              Latest Certified Arrivals
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-ink tracking-tight">
-              Featured Tech Hardware
+      {/* 5. "Featured Products" Section & Compact Cards (Staggered Grid Reveal) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={16} duration={450}>
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+              Featured Products
             </h2>
-            <p className="text-xs text-ink-muted mt-1.5">Handpicked selection of trending certified devices</p>
+            <Link
+              href="/products"
+              className="text-xs font-semibold text-neutral-600 hover:text-[#0070F3] flex items-center gap-1 group"
+            >
+              <span>See All Products</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
-          <Link href="/products" className="text-xs font-bold text-teal-700 hover:text-teal-900 flex items-center gap-1.5 bg-teal-50 px-4 py-2 rounded-xl border border-teal-200 hover:border-teal-300 transition-all hover:-translate-y-0.5">
-            <span>Open Catalog</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+        </ScrollReveal>
 
         {loadingProducts ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <div key={i} className="bg-white rounded-2xl border border-border p-4 space-y-3">
-                <Skeleton className="w-full h-44 rounded-xl" />
-                <Skeleton className="w-3/4 h-5" />
-                <Skeleton className="w-1/2 h-4" />
-                <Skeleton className="w-full h-8" />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="w-full h-32 rounded-lg" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+          <StaggerContainer staggerDelay={70} duration={450} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featuredCompact.map((p, idx) => (
+              <StaggerItem key={p.id} index={idx}>
+                <div
+                  className="bg-white border border-neutral-200 rounded-lg p-4 flex items-center gap-4 hover:border-[#FFBE00] hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className="relative w-20 h-20 shrink-0 bg-neutral-50 rounded flex items-center justify-center overflow-hidden">
+                    <Image
+                      src={p.images?.[0] || 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=300&q=80'}
+                      alt={p.title}
+                      fill
+                      className="object-contain p-1 transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+
+                  <div className="flex-1 space-y-1 text-left">
+                    <Link href={`/products/${p.slug || p.id}`}>
+                      <h4 className="font-semibold text-xs text-neutral-900 hover:text-[#0070F3] line-clamp-1 transition-colors">
+                        {p.title}
+                      </h4>
+                    </Link>
+
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-bold text-xs text-neutral-900">
+                        Rs {p.basePrice.toLocaleString()}
+                      </span>
+                      {p.compareAtPrice && p.compareAtPrice > p.basePrice && (
+                        <span className="text-[10px] text-neutral-400 line-through">
+                          Rs {p.compareAtPrice.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+
+                    <Link
+                      href={`/products/${p.slug || p.id}`}
+                      className="inline-block bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 font-bold text-[10px] px-3 py-1 rounded transition-colors shadow-2xs hover:shadow-xs"
+                    >
+                      Shop Now
+                    </Link>
+                  </div>
+                </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         )}
       </section>
 
-      {/* 6. Trust & Guarantee Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="bg-white rounded-3xl border border-border p-8 sm:p-10 luxury-glow-subtle">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center space-y-3">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-100 text-teal-700 flex items-center justify-center mx-auto shadow-sm">
-                <ShieldCheck className="w-7 h-7" />
-              </div>
-              <div>
-                <h4 className="font-extrabold text-sm text-ink">100% Genuine</h4>
-                <p className="text-[11px] text-ink-muted mt-1">Every product verified through IMEI and serial check</p>
-              </div>
-            </div>
-
-            <div className="text-center space-y-3">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
-                <Truck className="w-7 h-7" />
-              </div>
-              <div>
-                <h4 className="font-extrabold text-sm text-ink">Fast Delivery</h4>
-                <p className="text-[11px] text-ink-muted mt-1">24-48 hours nationwide with real-time tracking</p>
+      {/* 6. Full-Width Dark Graphics Card Promotional Banner (Cinematic Reveal) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={20} duration={600}>
+          <div className="bg-[#14171F] rounded-2xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group shadow-md">
+            <div className="space-y-3 max-w-md z-10 text-center md:text-left">
+              <span className="text-[11px] text-neutral-400 uppercase font-semibold tracking-wider">
+                Recently Launched Graphics Card
+              </span>
+              <h3 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+                Get Your New <span className="text-[#FFBE00]">High Processing</span> <br />
+                Gaming Graphics Card
+              </h3>
+              <div className="pt-2">
+                <Link
+                  href="/products?search=RTX"
+                  className="inline-block bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 font-bold text-xs px-6 py-2.5 rounded shadow-xs hover:shadow-md transition-all active:scale-95"
+                >
+                  Shop Now
+                </Link>
               </div>
             </div>
 
-            <div className="text-center space-y-3">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-50 to-violet-100 text-violet-600 flex items-center justify-center mx-auto shadow-sm">
-                <RotateCcw className="w-7 h-7" />
-              </div>
-              <div>
-                <h4 className="font-extrabold text-sm text-ink">7-Day Returns</h4>
-                <p className="text-[11px] text-ink-muted mt-1">Full refund if any technical discrepancy found</p>
-              </div>
+            <div className="relative w-72 h-44 sm:w-96 sm:h-56 shrink-0 flex items-center justify-center">
+              <Image
+                src="https://images.unsplash.com/photo-1591488320449-011701bb6704?w=800&q=80"
+                alt="High Processing Graphics Card"
+                fill
+                className="object-contain group-hover:scale-108 transition-transform duration-700 ease-out"
+              />
             </div>
+          </div>
+        </ScrollReveal>
+      </section>
 
-            <div className="text-center space-y-3">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
-                <Award className="w-7 h-7" />
-              </div>
-              <div>
-                <h4 className="font-extrabold text-sm text-ink">Spec Verified</h4>
-                <p className="text-[11px] text-ink-muted mt-1">Hardware specs independently validated by experts</p>
+      {/* 7. "Shop By New Products" Section (Staggered 4-Card Reveal) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={16} duration={450}>
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+              Shop By New Products
+            </h2>
+
+            <div className="flex items-center gap-1.5">
+              <button className="w-7 h-7 rounded border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-900">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button className="w-7 h-7 rounded bg-[#FFBE00] flex items-center justify-center text-neutral-900 font-bold">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {loadingProducts ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="w-full h-80 rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <StaggerContainer staggerDelay={80} duration={450} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {shopByNew.map((product, idx) => (
+              <StaggerItem key={product.id} index={idx}>
+                <ProductCard product={product} />
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        )}
+      </section>
+
+      {/* 8. "Deals Of The Week" Section with Countdown (Smooth Reveal) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={18} duration={500}>
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+              Deals Of The Week
+            </h2>
+
+            {/* Countdown Clock */}
+            <div className="flex items-center gap-2 text-xs font-bold text-neutral-900 bg-neutral-100 px-3 py-1.5 rounded-full">
+              <Clock className="w-4 h-4 text-[#FFBE00]" />
+              <span>Ends In:</span>
+              <div className="flex items-center gap-1 font-mono">
+                <span className="bg-white px-1.5 py-0.5 rounded shadow-2xs">{String(timeLeft.days).padStart(2, '0')}d</span>
+                <span>:</span>
+                <span className="bg-white px-1.5 py-0.5 rounded shadow-2xs">{String(timeLeft.hours).padStart(2, '0')}h</span>
+                <span>:</span>
+                <span className="bg-white px-1.5 py-0.5 rounded shadow-2xs">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+                <span>:</span>
+                <span className="bg-white px-1.5 py-0.5 rounded shadow-2xs text-[#DF2020]">{String(timeLeft.seconds).padStart(2, '0')}s</span>
               </div>
             </div>
           </div>
-        </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {weeklyDeals.map((deal) => (
+              <div
+                key={deal.id}
+                className="bg-white border border-neutral-200 rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6 hover:border-[#FFBE00] hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="relative w-44 h-44 shrink-0 bg-neutral-50 rounded flex items-center justify-center">
+                  <Image
+                    src={deal.images?.[0] || 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400&q=80'}
+                    alt={deal.title}
+                    fill
+                    className="object-contain p-2 transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+
+                <div className="space-y-2 flex-1 text-left">
+                  <span className="text-[10px] font-bold uppercase text-neutral-400">
+                    {deal.brand} · {deal.agentShopName}
+                  </span>
+
+                  <Link href={`/products/${deal.slug || deal.id}`}>
+                    <h4 className="font-bold text-sm text-neutral-900 hover:text-[#0070F3] line-clamp-2 transition-colors">
+                      {deal.title}
+                    </h4>
+                  </Link>
+
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-base font-bold text-neutral-900">
+                      Rs {deal.basePrice.toLocaleString()}
+                    </span>
+                    {deal.compareAtPrice && (
+                      <span className="text-xs text-neutral-400 line-through">
+                        Rs {deal.compareAtPrice.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="pt-2">
+                    <Link
+                      href={`/products/${deal.slug || deal.id}`}
+                      className="inline-block bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 font-bold text-xs px-5 py-2 rounded transition-colors shadow-2xs hover:shadow-xs"
+                    >
+                      Shop Now
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* 9. Gamer Blue Neon Lights Cabinet Banner */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={20} duration={600}>
+          <div className="bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 rounded-2xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group shadow-md">
+            <div className="relative w-64 h-64 shrink-0 flex items-center justify-center">
+              <Image
+                src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80"
+                alt="Gamer Blue Neon Lights Cabinet"
+                fill
+                className="object-contain group-hover:scale-108 transition-transform duration-700 ease-out"
+              />
+            </div>
+
+            <div className="space-y-3 max-w-md z-10 text-center md:text-right">
+              <span className="text-[11px] text-cyan-400 uppercase font-semibold tracking-wider">
+                New Gaming PC Case
+              </span>
+              <h3 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+                Sprint Of <span className="text-[#FFBE00]">Gamer Blue Neon</span> <br />
+                Lights Cabinet
+              </h3>
+              <div className="pt-2">
+                <Link
+                  href="/products?search=Case"
+                  className="inline-block bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 font-bold text-xs px-6 py-2.5 rounded shadow-xs hover:shadow-md transition-all active:scale-95"
+                >
+                  Shop Now
+                </Link>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* 10. "What Our Customer Says" (Staggered Testimonials Reveal) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal direction="up" distance={16} duration={450}>
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+              What Our Customer Says
+            </h2>
+
+            <div className="flex items-center gap-1.5">
+              <button className="w-7 h-7 rounded border border-neutral-200 flex items-center justify-center text-neutral-400">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button className="w-7 h-7 rounded bg-[#FFBE00] flex items-center justify-center text-neutral-900 font-bold">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <StaggerContainer staggerDelay={90} duration={500} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {CUSTOMER_REVIEWS.map((rev, i) => (
+            <StaggerItem key={i} index={i}>
+              <div className="border border-neutral-200 rounded-lg p-6 bg-white space-y-4 hover:border-[#FFBE00] hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-left">
+                <p className="text-xs text-neutral-600 leading-relaxed italic">
+                  &ldquo;{rev.quote}&rdquo;
+                </p>
+
+                <div className="flex text-[#FFBE00]">
+                  {[...Array(5)].map((_, s) => (
+                    <Star key={s} className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00]" />
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-3 pt-2 border-t border-neutral-100">
+                  <div className="w-8 h-8 rounded-full bg-[#191919] text-white flex items-center justify-center font-bold text-xs">
+                    {rev.author.charAt(0)}
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-xs text-neutral-900">{rev.author}</h5>
+                    <p className="text-[10px] text-neutral-400">{rev.role}</p>
+                  </div>
+                </div>
+              </div>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </section>
+
+      {/* 11. Brand Logos Strip (Subtle Fade In) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <ScrollReveal direction="up" distance={12} duration={400}>
+          <div className="border-t border-b border-neutral-200 py-8">
+            <div className="flex flex-wrap items-center justify-between gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+              <span className="font-extrabold text-xl tracking-tighter text-neutral-800 hover:scale-105 transition-transform">ASUS</span>
+              <span className="font-extrabold text-xl tracking-tight text-neutral-800 hover:scale-105 transition-transform">hp</span>
+              <span className="font-extrabold text-xl tracking-widest text-neutral-800 hover:scale-105 transition-transform">DELL</span>
+              <span className="font-extrabold text-xl tracking-wide text-neutral-800 hover:scale-105 transition-transform">BenQ</span>
+              <span className="font-bold text-xl tracking-normal text-neutral-800 hover:scale-105 transition-transform">Lenovo</span>
+              <span className="font-extrabold text-xl tracking-tighter text-neutral-800 hover:scale-105 transition-transform">NVIDIA</span>
+            </div>
+          </div>
+        </ScrollReveal>
       </section>
 
     </div>

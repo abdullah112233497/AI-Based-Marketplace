@@ -3,10 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, SlidersHorizontal, ShieldCheck, ShoppingCart, Star, Sparkles, Package } from 'lucide-react';
+import { Heart, SlidersHorizontal, ShoppingCart, Star, ShieldCheck } from 'lucide-react';
 import { ProductSummary, ProductCondition } from '@tech-marketplace/shared';
-import { Badge } from '../ui/Badge';
-import { PriceTag } from '../ui/PriceTag';
 import { useCart } from '@/lib/cart-context';
 import { useCompare } from '@/lib/compare-context';
 
@@ -15,8 +13,7 @@ export interface ProductCardProps {
   viewMode?: 'grid' | 'list';
 }
 
-// SVG placeholder as a data URI — renders a clean tech-themed icon
-const PLACEHOLDER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23f1f5f9' width='400' height='400'/%3E%3Cg transform='translate(150,150)'%3E%3Crect x='10' y='0' width='80' height='100' rx='8' fill='%23cbd5e1'/%3E%3Crect x='20' y='8' width='60' height='70' rx='4' fill='%23e2e8f0'/%3E%3Ccircle cx='50' cy='90' r='5' fill='%23e2e8f0'/%3E%3C/g%3E%3C/svg%3E`;
+const PLACEHOLDER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23fafafa' width='400' height='400'/%3E%3Cg transform='translate(150,150)'%3E%3Crect x='10' y='0' width='80' height='100' rx='8' fill='%23e5e7eb'/%3E%3Crect x='20' y='8' width='60' height='70' rx='4' fill='%23f3f4f6'/%3E%3Ccircle cx='50' cy='90' r='5' fill='%23e5e7eb'/%3E%3C/g%3E%3C/svg%3E`;
 
 export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
   const { addToCart, isInWishlist, toggleWishlist } = useCart();
@@ -27,121 +24,125 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
   const isLiked = isInWishlist(product.id);
   const isCompared = isInCompare(product.id);
 
-  const conditionVariant =
-    product.condition === ProductCondition.NEW
-      ? 'success'
-      : product.condition === ProductCondition.REFURBISHED
-      ? 'brand'
-      : 'warning';
+  // Format Pakistani Rupees
+  const formatPrice = (amount: number) => `Rs ${amount.toLocaleString()}`;
 
-  // Discount percentage
-  const discountPercent = product.compareAtPrice && product.compareAtPrice > product.basePrice
-    ? Math.round(((product.compareAtPrice - product.basePrice) / product.compareAtPrice) * 100)
+  // Discount percentage if compareAtPrice is higher
+  const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.basePrice;
+  const discountPercent = hasDiscount
+    ? Math.round(((product.compareAtPrice! - product.basePrice) / product.compareAtPrice!) * 100)
     : 0;
 
-  // Extract 2-3 key specs for quick pill display
-  const keySpecs = Object.entries(product.specs || {})
-    .filter(([k]) => ['ram_gb', 'storage_gb', 'cpu', 'battery_mah', 'gpu', 'pta_approved'].includes(k))
-    .slice(0, 3)
-    .map(([k, v]) => {
-      if (k === 'ram_gb') return `${v}GB RAM`;
-      if (k === 'storage_gb') return `${v}GB`;
-      if (k === 'battery_mah') return `${v}mAh`;
-      if (k === 'pta_approved' && v === 'Official PTA Approved') return 'Official PTA';
-      return String(v);
-    });
-
+  // List View Mode
   if (viewMode === 'list') {
     return (
-      <div className="luxury-card rounded-2xl p-5 flex flex-col sm:flex-row gap-6 group">
-        {/* Product Image */}
-        <div className="relative w-full sm:w-52 h-52 rounded-xl overflow-hidden bg-slate-50 shrink-0 border border-slate-100 flex items-center justify-center">
+      <div className="group bg-white rounded-lg border border-neutral-200 p-5 flex flex-col sm:flex-row gap-6 hover:border-[#FFBE00] hover:shadow-md transition-all duration-300">
+        {/* Product Image Stage */}
+        <div className="relative w-full sm:w-56 h-52 rounded-md bg-neutral-50 shrink-0 flex items-center justify-center overflow-hidden border border-neutral-100">
           <Image
             src={imgSrc}
             alt={product.title}
             fill
+            sizes="(max-width: 640px) 100vw, 224px"
             onError={() => setImgSrc(PLACEHOLDER_SVG)}
             onLoad={() => setImgLoaded(true)}
-            className={`object-contain p-3 transition-all duration-500 ${imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+            className={`object-contain p-4 transition-transform duration-500 group-hover:scale-105 ${
+              imgLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
           />
-          {!imgLoaded && <div className="absolute inset-0 img-placeholder rounded-xl" />}
-          <div className="absolute top-2.5 left-2.5">
-            <Badge variant={conditionVariant} size="sm" className="shadow-xs backdrop-blur-md">
-              {product.condition}
-            </Badge>
-          </div>
-          {discountPercent > 0 && (
-            <div className="absolute bottom-2.5 left-2.5 bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm">
+          {!imgLoaded && <div className="absolute inset-0 bg-neutral-100 animate-pulse" />}
+
+          {hasDiscount && (
+            <div className="absolute top-2.5 left-2.5 bg-[#DF2020] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
               -{discountPercent}%
             </div>
           )}
         </div>
 
-        {/* Info */}
+        {/* Product Details & Actions */}
         <div className="flex-1 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-2 text-xs text-ink-muted">
-              <span className="font-bold text-slate-700 tracking-wide uppercase text-[10px]">{product.brand}</span>
-              <span>•</span>
-              <span className="flex items-center gap-1 text-teal-800 font-semibold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200/60">
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                {product.agentShopName} ({product.agentCity})
+            {/* Category / Brand Eyebrow */}
+            <div className="flex items-center gap-2 mb-1.5 text-xs text-neutral-400">
+              <span className="font-semibold text-neutral-500 uppercase tracking-wider text-[11px]">
+                {product.categoryName || product.brand}
+              </span>
+              <span>·</span>
+              <span className="flex items-center gap-1 text-neutral-600">
+                <ShieldCheck className="w-3.5 h-3.5 text-neutral-700" />
+                <span>{product.agentShopName}</span>
+                <span>({product.agentCity})</span>
               </span>
             </div>
 
+            {/* Title */}
             <Link href={`/products/${product.slug || product.id}`}>
-              <h3 className="font-extrabold text-ink text-base hover:text-brand transition-colors line-clamp-2 mb-2 leading-snug">
+              <h3 className="font-bold text-neutral-900 text-base hover:text-[#0070F3] transition-colors line-clamp-2 leading-snug mb-2">
                 {product.title}
               </h3>
             </Link>
 
-            <p className="text-xs text-ink-muted line-clamp-2 mb-3 leading-relaxed">
-              {product.description}
-            </p>
-
-            {/* Key Specs Pills */}
-            {keySpecs.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {keySpecs.map((spec, idx) => (
-                  <span key={idx} className="text-[11px] font-semibold bg-slate-100/80 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200/60">
-                    {spec}
-                  </span>
+            {/* 5-Star Rating */}
+            <div className="flex items-center gap-1 mb-2">
+              <div className="flex text-[#FFBE00]">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00]" />
                 ))}
               </div>
-            )}
+              <span className="text-xs text-neutral-500 font-medium ml-1">
+                ({product.rating.toFixed(1)})
+              </span>
+            </div>
+
+            <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed">
+              {product.description}
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-            <PriceTag price={product.basePrice} compareAtPrice={product.compareAtPrice} size="lg" />
+          {/* Pricing & Yellow Add-to-Cart Button */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-neutral-100 mt-4">
+            <div className="flex items-baseline gap-2">
+              {hasDiscount && (
+                <span className="text-xs text-neutral-400 line-through">
+                  {formatPrice(product.compareAtPrice!)}
+                </span>
+              )}
+              <span className="text-lg font-bold text-neutral-900">
+                {formatPrice(product.basePrice)}
+              </span>
+            </div>
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => isCompared ? removeFromCompare(product.id) : addToCompare(product)}
-                className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  isCompared ? 'bg-teal-700 text-white border-teal-700' : 'border-border text-slate-600 hover:bg-slate-50'
+                onClick={() => (isCompared ? removeFromCompare(product.id) : addToCompare(product))}
+                className={`p-2 rounded border text-xs font-medium transition-colors ${
+                  isCompared
+                    ? 'bg-neutral-900 text-white border-neutral-900'
+                    : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50'
                 }`}
                 title="Compare Specifications"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">{isCompared ? 'In Compare' : 'Compare'}</span>
               </button>
 
               <button
                 onClick={() => toggleWishlist(product.id)}
-                className={`p-2 rounded-xl border text-xs transition-all ${
-                  isLiked ? 'bg-rose-50 border-rose-200 text-rose-600' : 'border-border text-slate-600 hover:bg-slate-50'
+                className={`p-2 rounded border text-xs transition-colors ${
+                  isLiked
+                    ? 'bg-[#DF2020] border-[#DF2020] text-white'
+                    : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50'
                 }`}
                 title="Save to Wishlist"
               >
-                <Heart className={`w-4 h-4 ${isLiked ? 'fill-rose-600' : ''}`} />
+                <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
               </button>
 
               <button
                 onClick={() => addToCart(product)}
-                className="px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-bold flex items-center gap-1.5 shadow-sm hover:shadow-md transition-all active:scale-95"
+                className="px-6 py-2 rounded bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
               >
-                <ShoppingCart className="w-4 h-4" />
-                Add to Cart
+                <ShoppingCart className="w-3.5 h-3.5" />
+                <span>Add To Cart</span>
               </button>
             </div>
           </div>
@@ -149,49 +150,25 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
       </div>
     );
   }
-
-  // Grid Card View (Default)
+  // Grid View Mode (Directly inspired by Onetech's "Shop By New Products" & "Featured Products")
   return (
-    <div className="luxury-card rounded-2xl p-4 flex flex-col justify-between group relative">
-      {/* Top Image & Floating Badges */}
-      <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 mb-3.5 border border-slate-100/80 flex items-center justify-center">
-        <Image
-          src={imgSrc}
-          alt={product.title}
-          fill
-          onError={() => setImgSrc(PLACEHOLDER_SVG)}
-          onLoad={() => setImgLoaded(true)}
-          className={`object-contain p-3.5 transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-        />
-        {!imgLoaded && <div className="absolute inset-0 img-placeholder rounded-xl" />}
-
-        {/* Condition Badge */}
-        <div className="absolute top-2.5 left-2.5 z-10">
-          <Badge variant={conditionVariant} size="sm" className="shadow-xs backdrop-blur-md">
-            {product.condition}
-          </Badge>
-        </div>
-
-        {/* Discount Badge */}
-        {discountPercent > 0 && (
-          <div className="absolute bottom-2.5 left-2.5 z-10 bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm badge-premium">
-            -{discountPercent}% OFF
-          </div>
-        )}
-
-        {/* Action icons over image */}
-        <div className="absolute top-2.5 right-2.5 flex flex-col gap-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+    <div className="group bg-white rounded-lg border border-neutral-200/90 p-4 flex flex-col justify-between hover:border-[#FFBE00] hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 ease-out relative">
+      <div>
+        {/* Wishlist & Compare Icons (Top Right) */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
           <button
             onClick={(e) => {
               e.preventDefault();
               toggleWishlist(product.id);
             }}
-            className={`p-2 rounded-full shadow-md backdrop-blur-md transition-all hover:scale-110 ${
-              isLiked ? 'bg-rose-50 text-rose-600 ring-1 ring-rose-200' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-rose-600'
+            className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all duration-200 hover:scale-110 active:scale-90 shadow-2xs ${
+              isLiked
+                ? 'bg-[#DF2020] border-[#DF2020] text-white'
+                : 'bg-white border-neutral-200 text-neutral-400 hover:text-neutral-900 hover:border-neutral-300'
             }`}
-            title="Save to Wishlist"
+            title="Wishlist"
           >
-            <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-rose-600' : ''}`} />
+            <Heart className={`w-3 h-3 ${isLiked ? 'fill-current' : ''}`} />
           </button>
 
           <button
@@ -199,59 +176,90 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
               e.preventDefault();
               isCompared ? removeFromCompare(product.id) : addToCompare(product);
             }}
-            className={`p-2 rounded-full shadow-md backdrop-blur-md transition-all hover:scale-110 ${
-              isCompared ? 'bg-teal-700 text-white ring-1 ring-teal-500' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-brand'
+            className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all duration-200 hover:scale-110 active:scale-90 shadow-2xs ${
+              isCompared
+                ? 'bg-neutral-900 border-neutral-900 text-white'
+                : 'bg-white border-neutral-200 text-neutral-400 hover:text-neutral-900 hover:border-neutral-300'
             }`}
-            title="Compare Specs"
+            title="Compare"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <SlidersHorizontal className="w-3 h-3" />
           </button>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Vendor & Rating */}
-        <div className="flex items-center justify-between text-[11px] text-ink-muted mb-1.5">
-          <span className="flex items-center gap-1 truncate text-teal-800 font-semibold max-w-[65%]">
-            <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-            <span className="truncate">{product.agentShopName}</span>
-          </span>
-          <span className="flex items-center gap-1 text-amber-500 font-extrabold shrink-0 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200/60">
-            <Star className="w-3 h-3 fill-amber-400" />
-            {product.rating}
-          </span>
+        {/* Product Image Stage */}
+        <div className="relative w-full aspect-square rounded-md bg-white mb-3 flex items-center justify-center overflow-hidden">
+          <Link
+            href={`/products/${product.slug || product.id}`}
+            className="absolute inset-0 flex items-center justify-center p-4 z-0"
+          >
+            <Image
+              src={imgSrc}
+              alt={product.title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              onError={() => setImgSrc(PLACEHOLDER_SVG)}
+              onLoad={() => setImgLoaded(true)}
+              className={`object-contain p-2 transition-transform duration-500 ease-out group-hover:scale-108 ${
+                imgLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+            {!imgLoaded && <div className="absolute inset-0 bg-neutral-100 animate-pulse" />}
+          </Link>
+
+          {/* Discount Badge */}
+          {hasDiscount && (
+            <div className="absolute top-2 left-2 z-10 bg-[#DF2020] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs transition-transform duration-300 group-hover:scale-105">
+              -{discountPercent}%
+            </div>
+          )}
         </div>
 
-        {/* Product Title */}
+        {/* Category Tag */}
+        <div className="text-[11px] text-neutral-400 font-medium mb-1 tracking-wide">
+          {product.categoryName || product.brand}
+        </div>
+
+        {/* Product Title (Blue Hover) */}
         <Link href={`/products/${product.slug || product.id}`}>
-          <h3 className="font-extrabold text-ink text-sm hover:text-brand transition-colors line-clamp-2 mb-2 leading-snug">
+          <h3 className="font-semibold text-neutral-900 text-sm hover:text-[#0070F3] transition-colors duration-200 line-clamp-2 leading-snug mb-2">
             {product.title}
           </h3>
         </Link>
 
-        {/* Key Specs Pills */}
-        {keySpecs.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3.5">
-            {keySpecs.map((spec, idx) => (
-              <span key={idx} className="text-[10px] font-semibold bg-slate-100/90 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/50">
-                {spec}
-              </span>
+        {/* 5-Star Rating */}
+        <div className="flex items-center gap-1 mb-3">
+          <div className="flex text-[#FFBE00]">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00] transition-transform duration-200 hover:scale-125" />
             ))}
           </div>
-        )}
+          <span className="text-[11px] text-neutral-400 ml-1">
+            ({product.rating.toFixed(1)})
+          </span>
+        </div>
       </div>
 
-      {/* Price & Add to Cart button */}
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-        <PriceTag price={product.basePrice} compareAtPrice={product.compareAtPrice} size="sm" />
+      {/* Pricing & Onetech Yellow Button */}
+      <div className="pt-2 border-t border-neutral-100 space-y-3 mt-auto">
+        <div className="flex items-baseline gap-2">
+          {hasDiscount && (
+            <span className="text-xs text-neutral-400 line-through">
+              {formatPrice(product.compareAtPrice!)}
+            </span>
+          )}
+          <span className="text-base font-bold text-neutral-900">
+            {formatPrice(product.basePrice)}
+          </span>
+        </div>
 
+        {/* Iconic Onetech Yellow "Add To Cart" Button */}
         <button
           onClick={() => addToCart(product)}
-          className="p-2.5 rounded-xl bg-brand hover:bg-brand-dark text-white shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
-          title="Add to Shopping Cart"
+          className="w-full py-2 bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 font-bold text-xs rounded transition-all duration-200 flex items-center justify-center gap-1.5 shadow-xs hover:shadow active:scale-[0.97]"
         >
-          <ShoppingCart className="w-4 h-4" />
+          <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
+          <span>Add To Cart</span>
         </button>
       </div>
     </div>

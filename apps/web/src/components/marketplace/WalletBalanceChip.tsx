@@ -28,10 +28,10 @@ export function WalletBalanceChip() {
   return (
     <Link
       href="/wallet"
-      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold hover:bg-amber-100 transition-colors shadow-xs"
+      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100/90 hover:bg-neutral-200/80 border border-neutral-200 text-neutral-800 text-xs font-medium transition-all"
       title="Platform Wallet Rewards Balance"
     >
-      <Coins className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+      <Coins className="w-3.5 h-3.5 text-amber-600" />
       <span>{formatPKR(balance)}</span>
     </Link>
   );

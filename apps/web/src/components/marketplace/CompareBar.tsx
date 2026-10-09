@@ -14,33 +14,33 @@ export function CompareBar() {
   if (compareItems.length === 0) return null;
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-teal-200 shadow-2xl p-3 animate-in slide-in-from-bottom-5">
+    <div className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-neutral-200 shadow-cardHover p-3 animate-fade-up">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
         
         {/* Left info & Clear */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-teal-50 text-teal-800 flex items-center justify-center font-bold">
-            <SlidersHorizontal className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-ink">Compare Matrix ({compareItems.length}/4)</h4>
+            <h4 className="text-xs font-semibold text-neutral-900">Compare Matrix ({compareItems.length}/4)</h4>
             <button
               onClick={clearCompare}
-              className="text-[11px] text-ink-muted hover:text-rose-600 underline"
+              className="text-[11px] text-neutral-500 hover:text-rose-600 transition-colors"
             >
-              Clear all
+              Clear selection
             </button>
           </div>
         </div>
 
         {/* Selected Items Previews */}
-        <div className="flex items-center gap-3 overflow-x-auto py-1 max-w-full">
+        <div className="flex items-center gap-2.5 overflow-x-auto py-1 max-w-full">
           {compareItems.map(item => (
             <div
               key={item.id}
-              className="relative flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-1.5 pr-3 shrink-0"
+              className="relative flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded-xl p-1.5 pr-2.5 shrink-0"
             >
-              <div className="relative w-8 h-8 rounded bg-white overflow-hidden shrink-0">
+              <div className="relative w-8 h-8 rounded-lg bg-white border border-neutral-200/60 overflow-hidden shrink-0">
                 <Image
                   src={item.images[0] || ''}
                   alt={item.title}
@@ -48,13 +48,14 @@ export function CompareBar() {
                   className="object-contain p-0.5"
                 />
               </div>
-              <div className="max-w-[120px]">
-                <p className="text-[11px] font-semibold text-ink truncate">{item.title}</p>
-                <p className="text-[10px] text-teal-700 font-bold">{formatPKR(item.basePrice)}</p>
+              <div className="max-w-[130px]">
+                <p className="text-[11px] font-medium text-neutral-900 truncate">{item.title}</p>
+                <p className="text-[10px] text-neutral-600 font-semibold">{formatPKR(item.basePrice)}</p>
               </div>
               <button
                 onClick={() => removeFromCompare(item.id)}
-                className="w-4 h-4 rounded-full bg-slate-200 hover:bg-rose-500 hover:text-white flex items-center justify-center text-[10px] ml-1 transition-colors"
+                className="w-4 h-4 rounded-full bg-neutral-200/80 hover:bg-neutral-900 hover:text-white flex items-center justify-center text-[10px] ml-1 transition-colors"
+                title="Remove"
               >
                 <X className="w-2.5 h-2.5" />
               </button>
@@ -65,7 +66,7 @@ export function CompareBar() {
         {/* Action Button */}
         <div>
           <Link href="/compare">
-            <Button variant="primary" size="sm" className="whitespace-nowrap flex items-center gap-1.5">
+            <Button variant="primary" size="sm" pill className="whitespace-nowrap flex items-center gap-1.5 shadow-xs">
               <span>Compare Specs</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>

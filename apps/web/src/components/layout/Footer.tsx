@@ -1,112 +1,208 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { MapPin, Phone, Mail, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { Mail, Phone, MapPin, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-slate-300 pt-0 pb-0 border-t border-slate-800/60">
+    <footer className="bg-white border-t border-neutral-200 text-neutral-600">
       
-      {/* CTA Newsletter Strip */}
-      <div className="border-b border-slate-800/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-r from-teal-900/40 to-slate-800/40 border border-teal-800/30">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-teal-800/50 text-teal-400 flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-extrabold text-white text-sm">Get Deal Alerts & Spec Updates</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Be first to know when verified stock arrives</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="flex-1 sm:w-64 px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500"
-              />
-              <button className="px-4 py-2.5 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 text-white text-xs font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all shadow-lg shadow-teal-900/30">
-                Subscribe <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+      {/* 1. Vibrant Yellow Newsletter Bar (Directly from Reference Image) */}
+      <div className="bg-[#FFBE00] text-neutral-900 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center md:text-left">
+            <h3 className="text-2xl font-bold tracking-tight text-neutral-900">
+              Join Our Newsletter, Get 10% Off!
+            </h3>
+            <p className="text-xs text-neutral-800 font-medium">
+              Receive verified deals, flash discount vouchers, and hardware stock drops first.
+            </p>
           </div>
+
+          <form onSubmit={(e) => e.preventDefault()} className="flex items-center gap-2 w-full md:w-auto max-w-md">
+            <input
+              type="email"
+              placeholder="Enter your email address..."
+              className="flex-1 md:w-80 px-4 py-2.5 bg-white text-xs text-neutral-900 rounded-md border border-neutral-300 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+            />
+            <button
+              type="submit"
+              className="bg-[#191919] hover:bg-neutral-800 text-white font-semibold text-xs px-6 py-2.5 rounded-md transition-colors shrink-0"
+            >
+              Subscribe
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
-        <div className="col-span-2">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-white flex items-center justify-center font-black text-sm shadow-md">
-              TM
+      {/* 2. Main Sitemaps Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+        
+        {/* Brand identity column */}
+        <div className="lg:col-span-2 space-y-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-7 h-7 relative flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 36 36" className="w-7 h-7 fill-none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 2L32 10V26L18 34L4 26V10L18 2Z" fill="#0070F3" />
+                <path d="M18 2L32 10L18 18L4 10L18 2Z" fill="#FFBE00" />
+                <path d="M18 18L32 10V26L18 34V18Z" fill="#00BCD4" />
+                <path d="M4 10L18 18V34L4 26V10Z" fill="#0284C7" />
+              </svg>
             </div>
-            <span className="font-extrabold text-white text-lg tracking-tight">
-              TECH<span className="text-teal-400">MARKET</span>
+            <span className="font-bold text-2xl tracking-tight text-neutral-900">
+              Onetech
             </span>
-          </div>
-          <p className="text-xs text-slate-400 leading-relaxed max-w-xs mb-5">
-            Pakistan's premier specification-driven marketplace for authentic smartphones, high-performance laptops, and computing gear from verified physical stores.
+          </Link>
+
+          <p className="text-xs text-neutral-500 leading-relaxed max-w-sm">
+            Pakistan’s trusted technology hardware marketplace connecting enterprise and retail buyers directly with authenticated physical electronics stores across Lahore, Karachi, Islamabad, and Rawalpindi.
           </p>
-          <div className="space-y-2 text-xs text-slate-500">
+
+          <div className="space-y-2 pt-2 text-xs text-neutral-600">
             <div className="flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-teal-600" />
+              <Phone className="w-3.5 h-3.5 text-neutral-900 shrink-0" />
+              <span className="font-semibold text-neutral-900">+92 (042) 111-TECH-PK</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5 text-neutral-900 shrink-0" />
               <span>Hafeez Centre · Techno City · Blue Area · Saddar</span>
             </div>
             <div className="flex items-center gap-2">
-              <Mail className="w-3.5 h-3.5 text-teal-600" />
-              <span>support@techmarketplace.pk</span>
+              <Mail className="w-3.5 h-3.5 text-neutral-900 shrink-0" />
+              <span>support@onetech.pk</span>
             </div>
           </div>
         </div>
 
+        {/* Find It Fast */}
         <div>
-          <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-4">Browse Tech</h4>
-          <ul className="space-y-2.5 text-xs text-slate-400">
-            <li><Link href="/products?category=mobiles" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Flagship Mobiles</Link></li>
-            <li><Link href="/products?category=laptops" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Gaming Laptops</Link></li>
-            <li><Link href="/products?category=accessories" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Wireless Audio</Link></li>
-            <li><Link href="/compare" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Compare Devices</Link></li>
-            <li><Link href="/products" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Full Catalog</Link></li>
+          <h5 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-4">
+            Find It Fast
+          </h5>
+          <ul className="space-y-2.5 text-xs text-neutral-500">
+            <li>
+              <Link href="/products?category=mobiles" className="hover:text-[#0070F3] transition-colors">
+                Smartphones & Tablets
+              </Link>
+            </li>
+            <li>
+              <Link href="/products?category=laptops" className="hover:text-[#0070F3] transition-colors">
+                Laptops & Workstations
+              </Link>
+            </li>
+            <li>
+              <Link href="/products?category=accessories" className="hover:text-[#0070F3] transition-colors">
+                Audio & Wearables
+              </Link>
+            </li>
+            <li>
+              <Link href="/products?search=RTX" className="hover:text-[#0070F3] transition-colors">
+                Gaming Graphics Cards
+              </Link>
+            </li>
+            <li>
+              <Link href="/products?search=SSD" className="hover:text-[#0070F3] transition-colors">
+                High-Speed SSDs & RAM
+              </Link>
+            </li>
           </ul>
         </div>
 
+        {/* Customer Care */}
         <div>
-          <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-4">Vendors & Agents</h4>
-          <ul className="space-y-2.5 text-xs text-slate-400">
-            <li><Link href="/agents" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Shop Directory</Link></li>
-            <li><Link href="/register/agent" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Vendor Registration</Link></li>
-            <li><Link href="/agent" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Merchant Portal</Link></li>
-            <li><Link href="/admin" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Admin Gateway</Link></li>
+          <h5 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-4">
+            Customer Care
+          </h5>
+          <ul className="space-y-2.5 text-xs text-neutral-500">
+            <li>
+              <Link href="/account" className="hover:text-[#0070F3] transition-colors">
+                My Account
+              </Link>
+            </li>
+            <li>
+              <Link href="/orders" className="hover:text-[#0070F3] transition-colors">
+                Order Tracking
+              </Link>
+            </li>
+            <li>
+              <Link href="/compare" className="hover:text-[#0070F3] transition-colors">
+                Compare Hardware
+              </Link>
+            </li>
+            <li>
+              <Link href="/wallet" className="hover:text-[#0070F3] transition-colors">
+                Rewards Wallet
+              </Link>
+            </li>
+            <li>
+              <Link href="/products" className="hover:text-[#0070F3] transition-colors">
+                7-Day Returns & Inspection
+              </Link>
+            </li>
           </ul>
         </div>
 
+        {/* Physical Store Hubs */}
         <div>
-          <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-4">Customer Care</h4>
-          <ul className="space-y-2.5 text-xs text-slate-400">
-            <li><Link href="/orders" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Track Orders</Link></li>
-            <li><Link href="/wallet" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Rewards Wallet</Link></li>
-            <li><Link href="/cart" className="hover:text-teal-400 transition-colors hover:translate-x-0.5 inline-block">Shopping Cart</Link></li>
-            <li><span className="text-slate-500">COD Available Nationwide</span></li>
-            <li><span className="text-slate-500">PTA Verification Info</span></li>
+          <h5 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-4">
+            Verified Physical Hubs
+          </h5>
+          <ul className="space-y-2.5 text-xs text-neutral-500">
+            <li>
+              <Link href="/agents/techzone-hafeez-centre" className="hover:text-[#0070F3] transition-colors">
+                TechZone Hafeez Centre (Lahore)
+              </Link>
+            </li>
+            <li>
+              <Link href="/agents/galaxy-hub-technocity" className="hover:text-[#0070F3] transition-colors">
+                Galaxy Hub Techno City (Karachi)
+              </Link>
+            </li>
+            <li>
+              <Link href="/agents/apex-tech-blue-area" className="hover:text-[#0070F3] transition-colors">
+                Apex Tech Blue Area (Islamabad)
+              </Link>
+            </li>
+            <li>
+              <Link href="/agents/rawal-digital-rawalpindi" className="hover:text-[#0070F3] transition-colors">
+                Rawal Digital Saddar (Rawalpindi)
+              </Link>
+            </li>
+            <li>
+              <Link href="/register/agent" className="text-neutral-900 font-semibold hover:text-[#0070F3] transition-colors flex items-center gap-1">
+                <span>Sell With Us</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </li>
           </ul>
         </div>
+
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-slate-800/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <span>© {currentYear} Tech Marketplace Pakistan. All rights reserved.</span>
-          <div className="flex items-center gap-4">
-            <span>Next.js 14 · Express · TypeScript</span>
-            <div className="flex items-center gap-1.5 text-teal-600 font-semibold">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>All Specs Verified</span>
-            </div>
+      {/* 3. Bottom Legal Bar */}
+      <div className="border-t border-neutral-200 py-6 text-xs text-neutral-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© {currentYear} Onetech / TechMarket Pakistan. All rights reserved.</p>
+
+          <div className="flex items-center gap-4 text-[11px] text-neutral-500">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-neutral-900" />
+              <span>100% Genuine Hardware</span>
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-neutral-900" />
+              <span>PTA Pre-Verified</span>
+            </span>
+            <span>·</span>
+            <span>Physical Store Invoices</span>
           </div>
         </div>
       </div>
+
     </footer>
   );
 }
