@@ -4,6 +4,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.db.models.commission import (
     CommissionRecord,
@@ -15,13 +16,21 @@ from app.db.models.order import Order
 
 logger = get_logger(__name__)
 
+
+def get_platform_default_commission_rate() -> float:
+    """
+    Returns platform owner's configured commission rate from environment settings.
+    Default: 5.0% (0.05).
+    """
+    return get_settings().platform_commission_rate
+
+
 # Default category commission fallback rates (if not overridden in database)
 DEFAULT_CATEGORY_RATES = {
     "mobiles": 0.045,      # 4.5%
     "laptops": 0.040,      # 4.0%
     "accessories": 0.080,  # 8.0%
 }
-DEFAULT_FALLBACK_RATE = 0.050  # 5.0% general marketplace default
 
 
 async def get_category_commission_rate(
@@ -55,7 +64,7 @@ async def get_category_commission_rate(
     if category_slug and category_slug.strip().lower() in DEFAULT_CATEGORY_RATES:
         return DEFAULT_CATEGORY_RATES[category_slug.strip().lower()]
 
-    return DEFAULT_FALLBACK_RATE
+    return get_platform_default_commission_rate()
 
 
 async def record_order_commissions(

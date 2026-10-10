@@ -53,6 +53,18 @@ class Settings(BaseSettings):
     AUTH_COOKIE_SECURE: bool = False
     AUTH_COOKIE_SAMESITE: str = "lax"
 
+    # Platform Owner Commission Settings
+    PLATFORM_COMMISSION_PERCENTAGE: float = Field(
+        default=5.0,
+        description="Platform owner default commission in percentage (e.g. 5.0 for 5%)",
+    )
+
+    @property
+    def platform_commission_rate(self) -> float:
+        """Converts percentage to decimal rate (e.g. 5.0 -> 0.05)."""
+        val = self.PLATFORM_COMMISSION_PERCENTAGE
+        return (val / 100.0) if val > 1.0 else val
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: Any) -> List[str]:

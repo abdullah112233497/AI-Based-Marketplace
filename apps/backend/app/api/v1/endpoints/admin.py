@@ -5,9 +5,12 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_role
+from app.core.config import get_settings
 from app.core.exceptions import AppException, NotFoundException
 from app.core.logging import get_logger
 from app.db.models.agent import Agent, AgentStatus
+from app.db.models.commission import CommissionRecord
+from app.db.models.order import Order
 from app.db.models.product import Product, ProductStatus
 from app.db.models.review import Review, ReviewStatus
 from app.db.models.user import User, UserRole
@@ -130,16 +133,52 @@ async def get_admin_overview(
     current_admin: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db),
 ) -> StandardApiResponse[dict]:
-    # Total Users
+    settings = get_settings()
+
+    # 1. Platform Totals
     total_users = (await db.execute(select(func.count(User.id)))).scalar_one() or 0
-    # Total Agents
     total_agents = (await db.execute(select(func.count(Agent.id)))).scalar_one() or 0
-    # Pending Agents
     pending_agents = (
         await db.execute(
             select(func.count(Agent.id)).where(Agent.status == AgentStatus.PENDING)
         )
     ).scalar_one() or 0
+    total_products = (await db.execute(select(func.count(Product.id)))).scalar_one() or 0
+    total_orders = (await db.execute(select(func.count(Order.id)))).scalar_one() or 0
+
+    # 2. Financial Metrics (GMV & Earned/Pending Commission)
+    total_gmv = (await db.execute(select(func.coalesce(func.sum(Order.total_amount), 0)))).scalar_one() or 0
+    total_commissions = (
+        await db.execute(select(func.coalesce(func.sum(CommissionRecord.commission_amount), 0)))
+    ).scalar_one() or 0
+
+    # 3. Recent Activity Samples
+    recent_orders_stmt = select(Order).order_by(Order.created_at.desc()).limit(5)
+    recent_orders = (await db.execute(recent_orders_stmt)).scalars().all()
+    recent_orders_data = [
+        {
+            "id": str(o.id),
+            "orderNumber": o.order_number,
+            "customerName": o.customer_name,
+            "totalAmount": o.total_amount,
+            "status": o.status.value,
+            "createdAt": o.created_at.isoformat() if o.created_at else None,
+        }
+        for o in recent_orders
+    ]
+
+    recent_agents_stmt = select(Agent).order_by(Agent.created_at.desc()).limit(5)
+    recent_agents = (await db.execute(recent_agents_stmt)).scalars().all()
+    recent_agents_data = [
+        {
+            "id": str(a.id),
+            "shopName": a.shop_name,
+            "city": a.city,
+            "status": a.status.value,
+            "rating": a.rating,
+        }
+        for a in recent_agents
+    ]
 
     return StandardApiResponse(
         success=True,
@@ -148,13 +187,14 @@ async def get_admin_overview(
                 "totalUsers": total_users,
                 "totalAgents": total_agents,
                 "pendingAgents": pending_agents,
-                "totalProducts": 0,
-                "totalOrders": 0,
-                "totalGMV": 0,
-                "totalCommissions": 0,
+                "totalProducts": total_products,
+                "totalOrders": total_orders,
+                "totalGMV": total_gmv,
+                "totalCommissions": total_commissions,
+                "platformCommissionPercentage": settings.PLATFORM_COMMISSION_PERCENTAGE,
             },
-            "recentOrders": [],
-            "recentAgents": [],
+            "recentOrders": recent_orders_data,
+            "recentAgents": recent_agents_data,
         },
         message="Admin overview metrics retrieved",
     )
