@@ -29,7 +29,10 @@ import {
   Monitor,
   ArrowRight,
   Flame,
+  Bell,
+  CheckCheck,
 } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useCompare } from '@/lib/compare-context';
@@ -47,6 +50,42 @@ export function Header() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (user) {
+      apiFetch('/notifications/unread-count')
+        .then(res => {
+          if (res?.data?.unreadCount !== undefined) {
+            setUnreadCount(res.data.unreadCount);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const toggleNotifDropdown = () => {
+    if (!notifDropdownOpen && user) {
+      apiFetch('/notifications?limit=6')
+        .then(res => {
+          if (res?.data?.items) {
+            setNotifications(res.data.items);
+          }
+        })
+        .catch(() => {});
+    }
+    setNotifDropdownOpen(!notifDropdownOpen);
+  };
+
+  const markAllRead = async () => {
+    try {
+      await apiFetch('/notifications/read-all', { method: 'POST' });
+      setUnreadCount(0);
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch {}
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,17 +193,82 @@ export function Header() {
             </button>
           </form>
 
-          {/* Right Action Area — Sign In / Sign Up & User Avatar */}
+          {/* Right Action Area — Sign In / Sign Up, Notifications & User Avatar */}
           <div className="flex items-center gap-4 shrink-0">
             {user ? (
               <div className="flex items-center gap-3">
                 <WalletBalanceChip />
 
+                {/* Notifications Bell */}
+                <div className="relative">
+                  <button
+                    onClick={toggleNotifDropdown}
+                    className="relative p-1.5 rounded-md hover:bg-neutral-100 text-neutral-700 transition-colors cursor-pointer"
+                    title="Notifications"
+                  >
+                    <Bell className="w-4 h-4 text-neutral-600" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 animate-pulse">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {notifDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-neutral-200 py-2 z-50 animate-fade-up">
+                      <div className="px-4 py-2.5 border-b border-neutral-100 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-neutral-900">Notifications</span>
+                          {unreadCount > 0 && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600">
+                              {unreadCount} new
+                            </span>
+                          )}
+                        </div>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllRead}
+                            className="text-[11px] text-[#0070F3] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                          >
+                            <CheckCheck className="w-3.5 h-3.5" />
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="max-h-72 overflow-y-auto divide-y divide-neutral-100">
+                        {notifications.length === 0 ? (
+                          <div className="py-6 text-center text-xs text-neutral-400">
+                            No notifications yet
+                          </div>
+                        ) : (
+                          notifications.map((n) => (
+                            <div
+                              key={n.id}
+                              className={`p-3 text-xs transition-colors ${
+                                n.isRead ? 'bg-white opacity-75' : 'bg-blue-50/40'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-1 mb-1">
+                                <span className="font-bold text-neutral-900">{n.title}</span>
+                                <span className="text-[9px] text-neutral-400 shrink-0">
+                                  {new Date(n.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-neutral-600 leading-snug">{n.message}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* User Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 p-1.5 rounded-md hover:bg-neutral-100 transition-colors"
+                    className="flex items-center gap-2 p-1.5 rounded-md hover:bg-neutral-100 transition-colors cursor-pointer"
                   >
                     <div className="w-8 h-8 rounded-full bg-[#191919] text-white flex items-center justify-center font-bold text-xs">
                       {user.name.charAt(0).toUpperCase()}
@@ -209,11 +313,27 @@ export function Header() {
                       )}
 
                       <Link
+                        href="/profile"
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                      >
+                        <UserIcon className="w-4 h-4 text-neutral-600" />
+                        Profile & Saved Addresses
+                      </Link>
+
+                      <Link
+                        href="/wishlist"
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                      >
+                        <Heart className="w-4 h-4 text-rose-500" />
+                        My Saved Wishlist
+                      </Link>
+
+                      <Link
                         href="/orders"
                         className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
                       >
                         <ShoppingCart className="w-4 h-4 text-neutral-500" />
-                        Orders
+                        My Orders & Tracking
                       </Link>
 
                       <Link
@@ -227,7 +347,7 @@ export function Header() {
                       <div className="border-t border-neutral-100 mt-1 pt-1">
                         <button
                           onClick={logout}
-                          className="w-full text-left flex items-center gap-2 px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50"
+                          className="w-full text-left flex items-center gap-2 px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 cursor-pointer"
                         >
                           <LogOut className="w-4 h-4" />
                           Sign Out

@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { ProductSummary } from '@tech-marketplace/shared';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 export interface CartItem {
   id: string;
@@ -32,6 +34,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -49,6 +52,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Fetch persistent cart and wishlist from server for authenticated user
+  useEffect(() => {
+    if (user) {
+      apiFetch('/cart')
+        .then(res => {
+          if (res?.data?.items && Array.isArray(res.data.items)) {
+            setCart(res.data.items);
+          }
+        })
+        .catch(() => {});
+
+      apiFetch('/wishlist')
+        .then(res => {
+          if (res?.data && Array.isArray(res.data)) {
+            setWishlist(res.data.map((item: any) => item.productId));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem('tm_cart', JSON.stringify(cart));
@@ -57,6 +81,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart, wishlist, isLoaded]);
 
   const addToCart = (product: ProductSummary, quantity = 1, variantId?: string) => {
+    if (user) {
+      apiFetch('/cart/items', {
+        method: 'POST',
+        body: JSON.stringify({ productId: product.id, quantity, variantId }),
+      })
+        .then(res => {
+          if (res?.data?.items) setCart(res.data.items);
+        })
+        .catch(() => {});
+    }
+
     setCart(prev => {
       const existingIndex = prev.findIndex(item => item.productId === product.id && item.variantId === variantId);
       if (existingIndex > -1) {
@@ -85,7 +120,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.productId !== productId));
+    const itemToRemove = cart.find(i => i.productId === productId || i.id === productId);
+    if (user && itemToRemove) {
+      apiFetch(`/cart/items/${itemToRemove.id}`, { method: 'DELETE' })
+        .then(res => {
+          if (res?.data?.items) setCart(res.data.items);
+        })
+        .catch(() => {});
+    }
+    setCart(prev => prev.filter(item => item.productId !== productId && item.id !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -93,18 +136,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeFromCart(productId);
       return;
     }
+    const itemToUpdate = cart.find(i => i.productId === productId || i.id === productId);
+    if (user && itemToUpdate) {
+      apiFetch(`/cart/items/${itemToUpdate.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ quantity }),
+      })
+        .then(res => {
+          if (res?.data?.items) setCart(res.data.items);
+        })
+        .catch(() => {});
+    }
     setCart(prev =>
       prev.map(item =>
-        item.productId === productId ? { ...item, quantity: Math.min(quantity, item.stock) } : item
+        item.productId === productId || item.id === productId
+          ? { ...item, quantity: Math.min(quantity, item.stock) }
+          : item
       )
     );
   };
 
   const clearCart = () => {
+    if (user) {
+      apiFetch('/cart', { method: 'DELETE' }).catch(() => {});
+    }
     setCart([]);
   };
 
   const toggleWishlist = (productId: string) => {
+    const isPresent = wishlist.includes(productId);
+    if (user) {
+      if (isPresent) {
+        apiFetch(`/wishlist/${productId}`, { method: 'DELETE' }).catch(() => {});
+      } else {
+        apiFetch(`/wishlist/${productId}`, { method: 'POST' }).catch(() => {});
+      }
+    }
     setWishlist(prev =>
       prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
     );

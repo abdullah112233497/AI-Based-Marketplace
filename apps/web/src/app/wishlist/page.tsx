@@ -101,51 +101,34 @@ export default function WishlistPage() {
           </div>
         )}
 
-        {/* Empty Wishlist State */}
+        {/* Empty State */}
         {!isLoading && wishlistedProducts.length === 0 && (
-          <div className="bg-white rounded-2xl border border-neutral-200/80 p-12 text-center max-w-2xl mx-auto shadow-2xs">
-            <div className="w-16 h-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-4 border border-red-100">
-              <Heart className="w-8 h-8 fill-red-200 text-red-500" />
+          <div className="bg-white rounded-2xl border border-neutral-200/80 p-12 text-center max-w-lg mx-auto shadow-2xs">
+            <div className="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Heart className="w-7 h-7 stroke-[1.5]" />
             </div>
-            <h2 className="text-xl font-bold text-neutral-900 mb-2">
-              Your Wishlist is Currently Empty
-            </h2>
-            <p className="text-sm text-neutral-500 mb-6 max-w-md mx-auto leading-relaxed">
-              You haven&apos;t added any items to your wishlist yet. Explore our verified marketplace catalog and tap the heart icon on any card to save it here.
+            <h2 className="text-lg font-bold text-neutral-900 mb-1">Your wishlist is empty</h2>
+            <p className="text-xs text-neutral-500 mb-6">
+              You haven&apos;t added any tech products to your wishlist yet. Explore products and save them for later!
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#EAB308] text-neutral-900 font-bold text-xs px-6 py-3 rounded-lg shadow-xs transition-transform active:scale-95"
-              >
-                <span>Browse All Products</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-semibold text-xs px-5 py-3 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Return to Homepage</span>
-              </Link>
-            </div>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold px-6 py-2.5 rounded-lg transition-colors"
+            >
+              <span>Explore Tech Catalog</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         )}
 
-        {/* Wishlisted Products Grid */}
+        {/* Wishlist Grid */}
         {!isLoading && wishlistedProducts.length > 0 && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-xs text-neutral-600 font-semibold">
-                Showing {wishlistedProducts.length} {wishlistedProducts.length === 1 ? 'saved product' : 'saved products'}
-              </div>
-              <Link
-                href="/products"
-                className="text-xs font-bold text-[#0070F3] hover:underline flex items-center gap-1"
-              >
-                <span>Continue Shopping</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+            <div className="flex items-center justify-between text-xs text-neutral-500 mb-4 px-1">
+              <span>Showing {wishlistedProducts.length} saved product{wishlistedProducts.length > 1 ? 's' : ''}</span>
+              <span className="text-[11px] bg-neutral-100 text-neutral-600 px-2 py-0.5 rounded-full font-medium">
+                Live Stock Sync Active
+              </span>
             </div>
 
             <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
