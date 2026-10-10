@@ -26,3 +26,6 @@ yarn-error.log*
 
 # Misc
 *.tsbuildinfo
+
+# Audit & Evidence
+audit-evidence/

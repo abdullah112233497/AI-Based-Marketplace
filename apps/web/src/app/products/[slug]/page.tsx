@@ -22,7 +22,8 @@ import {
   Check,
   MessageSquare,
   ChevronRight,
-  Info
+  Info,
+  Bell
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -55,6 +56,34 @@ export default function ProductDetailPage() {
 
   // City Delivery Calculator
   const [selectedCity, setSelectedCity] = useState('Islamabad');
+
+  // Watchlist (Price Drop & Stock Alert)
+  const [isWatching, setIsWatching] = useState(false);
+  const [watchLoading, setWatchLoading] = useState(false);
+
+  const handleToggleWatch = async () => {
+    if (!user) {
+      alert('Please log in to set price drop and stock alerts.');
+      return;
+    }
+    setWatchLoading(true);
+    try {
+      await apiFetch('/watchlist', {
+        method: 'POST',
+        body: JSON.stringify({
+          productId: product?.id,
+          watchPriceDrop: true,
+          watchBackInStock: true,
+        }),
+      });
+      setIsWatching(true);
+      alert('Price Drop & Stock Alert activated! You will receive notifications when the price drops or inventory restocks.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to set alert');
+    } finally {
+      setWatchLoading(false);
+    }
+  };
 
   const { addToCart, isInWishlist, toggleWishlist } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
@@ -341,7 +370,19 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-rose-600' : ''}`} />
-                <span>{isLiked ? 'Saved to Wishlist' : 'Save to Wishlist'}</span>
+                <span>{isLiked ? 'Saved' : 'Wishlist'}</span>
+              </button>
+
+              <button
+                onClick={handleToggleWatch}
+                disabled={watchLoading}
+                className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
+                  isWatching ? 'bg-teal-50 border-teal-300 text-teal-800' : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                }`}
+                title="Alert me if price drops or item restocks"
+              >
+                <Bell className={`w-3.5 h-3.5 ${isWatching ? 'fill-teal-700' : ''}`} />
+                <span>{isWatching ? 'Alert Set' : 'Price Alert'}</span>
               </button>
             </div>
           </div>

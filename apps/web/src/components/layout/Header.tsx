@@ -18,8 +18,12 @@ import {
   Laptop,
   Smartphone,
   Headphones,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Bell,
+  MapPin,
+  CheckCheck
 } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useCompare } from '@/lib/compare-context';
@@ -36,6 +40,42 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (user) {
+      apiFetch('/notifications/unread-count')
+        .then(res => {
+          if (res?.data?.unreadCount !== undefined) {
+            setUnreadCount(res.data.unreadCount);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const toggleNotifDropdown = () => {
+    if (!notifDropdownOpen && user) {
+      apiFetch('/notifications?limit=6')
+        .then(res => {
+          if (res?.data?.items) {
+            setNotifications(res.data.items);
+          }
+        })
+        .catch(() => {});
+    }
+    setNotifDropdownOpen(!notifDropdownOpen);
+  };
+
+  const markAllRead = async () => {
+    try {
+      await apiFetch('/notifications/read-all', { method: 'POST' });
+      setUnreadCount(0);
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch {}
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,9 +172,76 @@ export function Header() {
               </Link>
             )}
 
+            {/* Notifications Bell */}
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={toggleNotifDropdown}
+                  className="relative p-2 rounded-xl text-slate-600 hover:text-brand hover:bg-teal-50 transition-all"
+                  title="Notifications"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] min-h-[18px] bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {notifDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-scale-in">
+                    <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-ink">Notifications</span>
+                        {unreadCount > 0 && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600">
+                            {unreadCount} new
+                          </span>
+                        )}
+                      </div>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllRead}
+                          className="text-[11px] text-teal-700 hover:text-teal-900 font-semibold flex items-center gap-1"
+                        >
+                          <CheckCheck className="w-3.5 h-3.5" />
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto divide-y divide-slate-50">
+                      {notifications.length === 0 ? (
+                        <div className="py-6 text-center text-xs text-slate-400">
+                          No notifications yet
+                        </div>
+                      ) : (
+                        notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={`p-3 text-xs transition-colors ${
+                              n.isRead ? 'bg-white opacity-75' : 'bg-teal-50/40'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-1 mb-1">
+                              <span className="font-bold text-ink">{n.title}</span>
+                              <span className="text-[9px] text-slate-400 shrink-0">
+                                {new Date(n.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 leading-snug">{n.message}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Wishlist */}
             <Link
-              href="/products"
+              href="/wishlist"
               className="relative p-2 rounded-xl text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-all"
               title="Saved Items"
             >
@@ -202,6 +309,16 @@ export function Header() {
                         Agent Merchant Dashboard
                       </Link>
                     )}
+
+                    <Link href="/profile" className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-brand transition-colors">
+                      <User className="w-4 h-4 text-teal-600" />
+                      Profile & Saved Addresses
+                    </Link>
+
+                    <Link href="/wishlist" className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-brand transition-colors">
+                      <Heart className="w-4 h-4 text-rose-500" />
+                      My Saved Wishlist
+                    </Link>
 
                     <Link href="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-brand transition-colors">
                       <ShoppingCart className="w-4 h-4 text-slate-500" />

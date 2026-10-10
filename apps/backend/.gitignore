@@ -1,0 +1,23 @@
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Linter
+.ruff_cache/
+.mypy_cache/
+
+# Local Environment
+.env
+.env.*
+!.env.example

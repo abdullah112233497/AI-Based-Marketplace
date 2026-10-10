@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   Sparkles,
   Truck,
-  RotateCcw
+  RotateCcw,
+  Trash2
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -103,9 +104,41 @@ export default function AgentDashboardPage() {
       alert('Product published successfully with verified dynamic specs!');
       setActiveTab('products');
       queryClient.invalidateQueries({ queryKey: ['agent-products'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-overview'] });
     },
     onError: (err: any) => {
       alert(`Failed to create product: ${err.message}`);
+    }
+  });
+
+  // Update Product (status / price / stock)
+  const updateProductMutation = useMutation({
+    mutationFn: ({ productId, data }: { productId: string; data: any }) =>
+      apiFetch(`/agent/products/${productId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data)
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-products'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-overview'] });
+    },
+    onError: (err: any) => {
+      alert(`Failed to update product: ${err.message}`);
+    }
+  });
+
+  // Archive / Delete Product
+  const deleteProductMutation = useMutation({
+    mutationFn: (productId: string) =>
+      apiFetch(`/agent/products/${productId}`, {
+        method: 'DELETE'
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-products'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-overview'] });
+    },
+    onError: (err: any) => {
+      alert(`Failed to delete product: ${err.message}`);
     }
   });
 
@@ -250,17 +283,68 @@ export default function AgentDashboardPage() {
                   <th className="p-3.5">Price (PKR)</th>
                   <th className="p-3.5">In Stock</th>
                   <th className="p-3.5">Status</th>
+                  <th className="p-3.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {products.map((p: any) => (
                   <tr key={p.id} className="hover:bg-slate-50/50">
                     <td className="p-3.5 font-bold text-ink max-w-xs truncate">{p.title}</td>
-                    <td className="p-3.5 text-ink-muted">{p.categoryName}</td>
+                    <td className="p-3.5 text-ink-muted">{p.categoryName || p.categoryId}</td>
                     <td className="p-3.5"><Badge variant="neutral">{p.condition}</Badge></td>
                     <td className="p-3.5 font-bold text-teal-800">{formatPKR(p.basePrice)}</td>
                     <td className="p-3.5 font-bold">{p.stock}</td>
-                    <td className="p-3.5"><Badge variant="success">{p.status}</Badge></td>
+                    <td className="p-3.5">
+                      <Badge variant={p.status === ProductStatus.PUBLISHED ? 'success' : 'neutral'}>
+                        {p.status}
+                      </Badge>
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newStatus = p.status === ProductStatus.PUBLISHED ? ProductStatus.UNPUBLISHED : ProductStatus.PUBLISHED;
+                            updateProductMutation.mutate({ productId: p.id, data: { status: newStatus } });
+                          }}
+                          disabled={updateProductMutation.isPending}
+                          className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 transition"
+                        >
+                          {p.status === ProductStatus.PUBLISHED ? 'Unpublish' : 'Publish'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const priceStr = prompt('Enter new price in PKR:', String(p.basePrice));
+                            if (priceStr === null) return;
+                            const price = parseInt(priceStr, 10);
+                            if (isNaN(price) || price <= 0) return alert('Invalid price');
+                            const stockStr = prompt('Enter new stock quantity:', String(p.stock));
+                            if (stockStr === null) return;
+                            const stock = parseInt(stockStr, 10);
+                            if (isNaN(stock) || stock < 0) return alert('Invalid stock');
+                            updateProductMutation.mutate({ productId: p.id, data: { basePrice: price, stock } });
+                          }}
+                          disabled={updateProductMutation.isPending}
+                          className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 transition"
+                        >
+                          Quick Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to archive "${p.title}"?`)) {
+                              deleteProductMutation.mutate(p.id);
+                            }
+                          }}
+                          disabled={deleteProductMutation.isPending}
+                          className="p-1 text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                          title="Archive product"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -353,21 +437,11 @@ export default function AgentDashboardPage() {
               <p className="text-xs text-ink-muted">Specs adapt dynamically based on selected category schema</p>
             </div>
 
-            {/* Reserved AI Generate Slot as specified */}
-            <button
-              type="button"
-              onClick={() => {
-                setNewTitle('Apple MacBook Pro 16" M3 Max 36GB');
-                setNewBrand('Apple');
-                setNewPrice(895000);
-                setNewDesc('The ultimate powerhouse for engineers and artists with Liquid Retina XDR.');
-                setNewSpecs({ cpu: 'M3 Max', ram_gb: '36', storage_gb: '1024', gpu: '30-Core' });
-              }}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs hover:opacity-95"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>AI Auto-Fill Specs</span>
-            </button>
+            {/* AI Listing Copilot reserved slot (Phase 4) */}
+            <div className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-xs font-semibold flex items-center gap-1.5 cursor-not-allowed select-none">
+              <Sparkles className="w-3.5 h-3.5 text-slate-400" />
+              <span>AI Listing Copilot (Phase 4)</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
