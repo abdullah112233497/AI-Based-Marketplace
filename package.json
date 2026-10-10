@@ -7,7 +7,9 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently -n \"API,WEB\" -c \"cyan,green\" \"npm:dev:api\" \"npm:dev:web\"",
+    "dev": "concurrently -n \"FASTAPI,WEB\" -c \"magenta,green\" \"npm:dev:backend\" \"npm:dev:web\"",
+    "dev:all": "concurrently -n \"FASTAPI,API,WEB\" -c \"magenta,cyan,green\" \"npm:dev:backend\" \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:backend": "cd apps/backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
     "dev:web": "npm run dev --workspace=@tech-marketplace/web",
     "dev:api": "npm run dev --workspace=@tech-marketplace/api",
     "build": "npm run build --workspaces --if-present",
