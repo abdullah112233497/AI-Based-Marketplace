@@ -317,7 +317,7 @@ export function Header() {
 
               {/* Wishlist */}
               <Link
-                href="/products"
+                href="/wishlist"
                 className="flex items-center gap-1.5 hover:text-[#0070F3] transition-colors"
               >
                 <Heart className="w-3.5 h-3.5 text-neutral-500" />
@@ -332,17 +332,17 @@ export function Header() {
               {/* Your Cart */}
               <Link
                 href="/cart"
-                className="flex items-center gap-1.5 hover:text-[#0070F3] transition-colors font-semibold text-neutral-900"
+                className="flex items-center gap-1.5 hover:text-[#0070F3] transition-colors font-semibold text-neutral-900 group"
               >
-                <div className="relative">
-                  <ShoppingCart className="w-4 h-4 text-neutral-800" />
+                <div className="relative flex items-center justify-center">
+                  <ShoppingCart className="w-4 h-4 text-neutral-800 group-hover:text-[#0070F3] transition-colors" />
                   {totalItems > 0 && (
-                    <span className="absolute -top-1.5 -right-2 bg-[#DF2020] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-[#DF2020] text-white text-[9px] font-bold rounded-full min-w-[15px] h-[15px] px-0.5 flex items-center justify-center ring-1 ring-white">
                       {totalItems}
                     </span>
                   )}
                 </div>
-                <span>Your Cart</span>
+                <span className="ml-1">Your Cart</span>
               </Link>
 
             </div>

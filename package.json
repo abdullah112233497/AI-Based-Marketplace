@@ -7,7 +7,7 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
+    "dev": "concurrently -n \"API,WEB\" -c \"cyan,green\" \"npm:dev:api\" \"npm:dev:web\"",
     "dev:web": "npm run dev --workspace=@tech-marketplace/web",
     "dev:api": "npm run dev --workspace=@tech-marketplace/api",
     "build": "npm run build --workspaces --if-present",
@@ -15,5 +15,8 @@
   },
   "keywords": ["marketplace", "ecommerce", "nextjs", "express", "typescript"],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }
