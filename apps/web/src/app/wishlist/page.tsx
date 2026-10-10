@@ -132,8 +132,8 @@ export default function WishlistPage() {
             </div>
 
             <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {wishlistedProducts.map((product) => (
-                <StaggerItem key={product.id}>
+              {wishlistedProducts.map((product, idx) => (
+                <StaggerItem key={product.id} index={idx}>
                   <ProductCard product={product} />
                 </StaggerItem>
               ))}

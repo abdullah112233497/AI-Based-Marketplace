@@ -46,7 +46,9 @@ export function AgentCard({ agent }: AgentCardProps) {
               {agent.shopName}
             </h3>
             {agent.isVerified && (
-              <ShieldCheck className="w-4 h-4 text-[#0070F3] shrink-0" title="Verified Storefront" />
+              <span title="Verified Storefront" className="inline-flex items-center">
+                <ShieldCheck className="w-4 h-4 text-[#0070F3] shrink-0" />
+              </span>
             )}
           </div>
           <p className="text-xs text-neutral-500 line-clamp-1">
