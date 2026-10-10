@@ -116,10 +116,11 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
-                onClick={() => handleDemoSelect('admin@techmarketplace.pk')}
-                className="p-1.5 rounded border border-neutral-200 bg-white hover:border-[#FFBE00] text-[10px] font-semibold text-neutral-800 transition-colors"
+                onClick={() => router.push('/admin/login')}
+                className="p-1.5 rounded border border-neutral-200 bg-slate-900 hover:bg-slate-800 text-[10px] font-semibold text-white transition-colors flex items-center justify-center gap-1"
               >
-                Super Admin
+                <span>Admin Portal</span>
+                <ArrowRight className="w-2.5 h-2.5 text-cyan-400" />
               </button>
             </div>
           </div>
@@ -200,6 +201,15 @@ export default function LoginPage() {
                 Sign Up Now
               </Link>
             </p>
+            <div className="mt-4 pt-3 border-t border-dashed border-neutral-200">
+              <Link
+                href="/admin/login"
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                <span>Platform Owner? Switch to Super Admin Portal</span>
+                <ArrowRight className="w-3 h-3 text-[#0070F3]" />
+              </Link>
+            </div>
           </div>
 
         </div>

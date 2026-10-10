@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ShieldAlert,
@@ -14,18 +15,28 @@ import {
   AlertOctagon,
   TrendingUp,
   Plus,
-  Trash2
+  Trash2,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import { AgentStatus, CommissionRuleType, CategorySpecSchema } from '@tech-marketplace/shared';
+import { AgentStatus, CommissionRuleType, CategorySpecSchema, UserRole } from '@tech-marketplace/shared';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { formatPKR } from '@/lib/utils';
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, isLoading, logout } = useAuth();
+
+  // Strict Admin Authorization Guard
+  useEffect(() => {
+    if (!isLoading && (!user || user.role !== UserRole.ADMIN)) {
+      router.push('/admin/login');
+    }
+  }, [user, isLoading, router]);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'agents' | 'spec_editor' | 'settings'>('overview');
   const [selectedCategorySlug, setSelectedCategorySlug] = useState('mobiles');
@@ -68,6 +79,15 @@ export default function AdminDashboardPage() {
   const agents = agentsRes?.data || [];
   const specSchema = specRes?.data;
 
+  if (isLoading || !user || user.role !== UserRole.ADMIN) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-3 bg-[#0B0F19] text-slate-400">
+        <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-mono">Authenticating Super Admin Session...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
@@ -81,8 +101,22 @@ export default function AdminDashboardPage() {
           <p className="text-xs text-slate-400 mt-1">Manage vendor approvals, catalog spec schemas, and fee structures</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">Environment: <strong className="text-emerald-400">Live Stage</strong></span>
+        <div className="flex items-center gap-4">
+          <div className="text-right hidden sm:block">
+            <div className="text-xs font-semibold text-white flex items-center justify-end gap-1.5">
+              <UserCheck className="w-3.5 h-3.5 text-teal-400" />
+              <span>{user?.email || 'admin@techmarketplace.pk'}</span>
+            </div>
+            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Role: Root Platform Owner</span>
+          </div>
+          <button
+            onClick={() => logout()}
+            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/80 hover:text-rose-300 text-slate-300 border border-slate-700/80 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Log out of Super Admin"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
 
