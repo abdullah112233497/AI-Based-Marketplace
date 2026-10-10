@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { OrderStatus, PaymentMethod } from '../enums.js';
+import { OrderStatus, PaymentMethod } from '../enums';
 
 export const ShippingAddressSchema = z.object({
   fullName: z.string().min(2, 'Full recipient name is required'),

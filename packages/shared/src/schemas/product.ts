@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ProductCondition, ProductStatus } from '../enums.js';
+import { ProductCondition, ProductStatus } from '../enums';
 
 export const ProductVariantSchema = z.object({
   id: z.string().optional(),

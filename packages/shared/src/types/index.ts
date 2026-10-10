@@ -1,4 +1,4 @@
-import { UserRole, AgentStatus, ProductCondition, ProductStatus, OrderStatus, PaymentMethod, PaymentStatus, WalletTransactionType } from '../enums.js';
+import { UserRole, AgentStatus, ProductCondition, ProductStatus, OrderStatus, PaymentMethod, PaymentStatus, WalletTransactionType } from '../enums';
 
 export interface UserSummary {
   id: string;

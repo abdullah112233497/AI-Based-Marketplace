@@ -18,6 +18,17 @@ import {
   Sparkles,
   Truck,
   RotateCcw,
+  Smartphone,
+  Laptop,
+  Headphones,
+  Watch,
+  Zap,
+  Cpu,
+  MapPin,
+  Gamepad2,
+  Monitor,
+  ArrowRight,
+  Flame,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
@@ -259,43 +270,267 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-11 text-xs">
 
-            {/* Left Category Navigation Links */}
+            {/* Left Category Navigation Links with Interactive Dropdowns */}
             <div className="hidden md:flex items-center gap-7 font-medium text-neutral-700">
-              <Link
-                href="/products"
-                className="flex items-center gap-1 hover:text-[#0070F3] transition-colors font-semibold text-neutral-900"
-              >
-                <span>Categories</span>
-                <ChevronDown className="w-3 h-3 text-neutral-500" />
-              </Link>
-              <Link
-                href="/products?category=accessories"
-                className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
-              >
-                <span>Accessories</span>
-                <ChevronDown className="w-3 h-3 text-neutral-400" />
-              </Link>
-              <Link
-                href="/products?category=laptops"
-                className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
-              >
-                <span>Gaming Laptop</span>
-                <ChevronDown className="w-3 h-3 text-neutral-400" />
-              </Link>
-              <Link
-                href="/agents"
-                className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
-              >
-                <span>Enterprise Hubs</span>
-                <ChevronDown className="w-3 h-3 text-neutral-400" />
-              </Link>
-              <Link
-                href="/products?search=PC"
-                className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
-              >
-                <span>Pre Built PC</span>
-                <ChevronDown className="w-3 h-3 text-neutral-400" />
-              </Link>
+              
+              {/* 1. Categories Dropdown */}
+              <div className="relative group py-2.5">
+                <Link
+                  href="/products"
+                  className="flex items-center gap-1 hover:text-[#0070F3] transition-colors font-semibold text-neutral-900"
+                >
+                  <span>Categories</span>
+                  <ChevronDown className="w-3 h-3 text-neutral-500 group-hover:rotate-180 transition-transform duration-200" />
+                </Link>
+
+                <div className="absolute top-full left-0 pt-1 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 pointer-events-none group-hover:pointer-events-auto">
+                  <div className="bg-white rounded-lg shadow-xl border border-neutral-200 p-2 text-xs divide-y divide-neutral-100">
+                    <div className="space-y-1 pb-2">
+                      <Link
+                        href="/products?category=mobiles"
+                        className="flex items-start gap-3 p-2 rounded-md hover:bg-neutral-50 group/item transition-colors"
+                      >
+                        <div className="p-1.5 rounded-md bg-blue-50 text-[#0070F3] group-hover/item:bg-[#0070F3] group-hover/item:text-white transition-colors mt-0.5">
+                          <Smartphone className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-neutral-900 group-hover/item:text-[#0070F3] transition-colors">Mobiles & Tablets</p>
+                          <p className="text-[11px] text-neutral-500">iPhones, Galaxy S-series, 5G devices</p>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/products?category=laptops"
+                        className="flex items-start gap-3 p-2 rounded-md hover:bg-neutral-50 group/item transition-colors"
+                      >
+                        <div className="p-1.5 rounded-md bg-amber-50 text-amber-600 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors mt-0.5">
+                          <Laptop className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-neutral-900 group-hover/item:text-[#0070F3] transition-colors">Laptops & Computers</p>
+                          <p className="text-[11px] text-neutral-500">MacBooks, RTX Gaming rigs, Ultrabooks</p>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/products?category=accessories"
+                        className="flex items-start gap-3 p-2 rounded-md hover:bg-neutral-50 group/item transition-colors"
+                      >
+                        <div className="p-1.5 rounded-md bg-emerald-50 text-emerald-600 group-hover/item:bg-emerald-600 group-hover/item:text-white transition-colors mt-0.5">
+                          <Headphones className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-neutral-900 group-hover/item:text-[#0070F3] transition-colors">Audio & Wearables</p>
+                          <p className="text-[11px] text-neutral-500">AirPods, Smartwatches, studio gear</p>
+                        </div>
+                      </Link>
+                    </div>
+
+                    <div className="pt-2">
+                      <Link
+                        href="/products"
+                        className="flex items-center justify-between p-2 rounded-md hover:bg-neutral-50 text-[#0070F3] font-semibold text-[11px]"
+                      >
+                        <span>View All Categories</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Accessories Dropdown */}
+              <div className="relative group py-2.5">
+                <Link
+                  href="/products?category=accessories"
+                  className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
+                >
+                  <span>Accessories</span>
+                  <ChevronDown className="w-3 h-3 text-neutral-400 group-hover:rotate-180 transition-transform duration-200" />
+                </Link>
+
+                <div className="absolute top-full left-0 pt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 pointer-events-none group-hover:pointer-events-auto">
+                  <div className="bg-white rounded-lg shadow-xl border border-neutral-200 p-2 text-xs divide-y divide-neutral-100">
+                    <div className="space-y-1 pb-2">
+                      <Link
+                        href="/products?category=accessories&search=Earbuds"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Headphones className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">Wireless Earbuds</span>
+                      </Link>
+                      <Link
+                        href="/products?category=accessories&search=Watch"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Watch className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">Smartwatches & Bands</span>
+                      </Link>
+                      <Link
+                        href="/products?category=accessories&search=Charger"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Zap className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">GaN Fast Chargers</span>
+                      </Link>
+                    </div>
+                    <div className="pt-2">
+                      <Link
+                        href="/products?category=accessories"
+                        className="flex items-center justify-between p-2 rounded-md hover:bg-neutral-50 text-[#0070F3] font-semibold text-[11px]"
+                      >
+                        <span>All Accessories</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Gaming Laptop Dropdown */}
+              <div className="relative group py-2.5">
+                <Link
+                  href="/products?category=laptops"
+                  className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
+                >
+                  <span>Gaming Laptop</span>
+                  <ChevronDown className="w-3 h-3 text-neutral-400 group-hover:rotate-180 transition-transform duration-200" />
+                </Link>
+
+                <div className="absolute top-full left-0 pt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 pointer-events-none group-hover:pointer-events-auto">
+                  <div className="bg-white rounded-lg shadow-xl border border-neutral-200 p-2 text-xs divide-y divide-neutral-100">
+                    <div className="space-y-1 pb-2">
+                      <Link
+                        href="/products?category=laptops&search=RTX"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Flame className="w-3.5 h-3.5 text-rose-500" />
+                        <span className="group-hover/item:text-[#0070F3]">RTX 40-Series Power</span>
+                      </Link>
+                      <Link
+                        href="/products?category=laptops&search=ASUS"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Gamepad2 className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">ASUS ROG & TUF</span>
+                      </Link>
+                      <Link
+                        href="/products?category=laptops&search=Legion"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Laptop className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">Lenovo Legion Series</span>
+                      </Link>
+                    </div>
+                    <div className="pt-2">
+                      <Link
+                        href="/products?category=laptops"
+                        className="flex items-center justify-between p-2 rounded-md hover:bg-neutral-50 text-[#0070F3] font-semibold text-[11px]"
+                      >
+                        <span>View All Laptops</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Enterprise Hubs Dropdown */}
+              <div className="relative group py-2.5">
+                <Link
+                  href="/agents"
+                  className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
+                >
+                  <span>Enterprise Hubs</span>
+                  <ChevronDown className="w-3 h-3 text-neutral-400 group-hover:rotate-180 transition-transform duration-200" />
+                </Link>
+
+                <div className="absolute top-full left-0 pt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 pointer-events-none group-hover:pointer-events-auto">
+                  <div className="bg-white rounded-lg shadow-xl border border-neutral-200 p-2 text-xs divide-y divide-neutral-100">
+                    <div className="space-y-1 pb-2">
+                      <Link
+                        href="/agents?city=lahore"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                        <span className="group-hover/item:text-[#0070F3]">Lahore (Hafeez Centre)</span>
+                      </Link>
+                      <Link
+                        href="/agents?city=karachi"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                        <span className="group-hover/item:text-[#0070F3]">Karachi (Techno City)</span>
+                      </Link>
+                      <Link
+                        href="/agents?city=islamabad"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-emerald-500" />
+                        <span className="group-hover/item:text-[#0070F3]">Islamabad / Rawalpindi</span>
+                      </Link>
+                    </div>
+                    <div className="pt-2">
+                      <Link
+                        href="/agents"
+                        className="flex items-center justify-between p-2 rounded-md hover:bg-neutral-50 text-[#0070F3] font-semibold text-[11px]"
+                      >
+                        <span>All Verified Storefronts</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Pre Built PC Dropdown */}
+              <div className="relative group py-2.5">
+                <Link
+                  href="/products?search=PC"
+                  className="flex items-center gap-1 hover:text-[#0070F3] transition-colors"
+                >
+                  <span>Pre Built PC</span>
+                  <ChevronDown className="w-3 h-3 text-neutral-400 group-hover:rotate-180 transition-transform duration-200" />
+                </Link>
+
+                <div className="absolute top-full left-0 pt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 pointer-events-none group-hover:pointer-events-auto">
+                  <div className="bg-white rounded-lg shadow-xl border border-neutral-200 p-2 text-xs divide-y divide-neutral-100">
+                    <div className="space-y-1 pb-2">
+                      <Link
+                        href="/products?search=Gaming"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Monitor className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">Custom Gaming Desktops</span>
+                      </Link>
+                      <Link
+                        href="/products?search=Workstation"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Cpu className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">Workstations & 3D Render</span>
+                      </Link>
+                      <Link
+                        href="/products?search=PC"
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-neutral-50 group/item text-neutral-800 transition-colors"
+                      >
+                        <Gamepad2 className="w-3.5 h-3.5 text-neutral-400 group-hover/item:text-[#0070F3]" />
+                        <span className="group-hover/item:text-[#0070F3]">Esports Budget Builds</span>
+                      </Link>
+                    </div>
+                    <div className="pt-2">
+                      <Link
+                        href="/products?search=PC"
+                        className="flex items-center justify-between p-2 rounded-md hover:bg-neutral-50 text-[#0070F3] font-semibold text-[11px]"
+                      >
+                        <span>Explore All Systems</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             {/* Right Utility Links: Compare, Wishlist, Your Cart */}

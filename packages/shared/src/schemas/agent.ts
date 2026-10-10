@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AgentStatus } from '../enums.js';
+import { AgentStatus } from '../enums';
 
 export const UpdateAgentProfileSchema = z.object({
   shopName: z.string().min(3, 'Shop name is required'),
